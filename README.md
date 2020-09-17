@@ -1,2 +1,4 @@
 # CustomSRP
- Learn UnitySRP
+ Learn UnitySRP 
+
+项目用于学习Unity SRP的渲染。
