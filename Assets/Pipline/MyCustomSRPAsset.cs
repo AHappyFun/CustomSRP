@@ -147,12 +147,21 @@ public class CameraRenderer
     static Material errorMat;
 
     const string bufferName = "---Render Camera---";
+# if UNITY_EDITOR
+     string sampleName = bufferName;
+#endif
     private CommandBuffer commandBuffer = new CommandBuffer { name = bufferName };
 
     public void Render(ScriptableRenderContext ctx, Camera cam)
     {
         context = ctx;
         camera = cam;
+
+#if UNITY_EDITOR
+        PrepareCameraBuffer();
+#endif
+
+        PrepareUIForSceneWindow();
 
         //剔除检测
         if (!Cull()) 
@@ -166,6 +175,8 @@ public class CameraRenderer
 
         DrawUnsupportShaders();
 
+        DrawGizmos();
+
         Submit();
     }
 
@@ -173,11 +184,19 @@ public class CameraRenderer
     {
         context.SetupCameraProperties(camera);
 
+        CameraClearFlags clearFlags = camera.clearFlags;
+
+
         //commandBuffer里注入样本，可以在Profiler和FrameDebugger里看到，需要有开始和结束
         commandBuffer.BeginSample(bufferName);
 
-        //渲染前ClearRT 清除Depth、Color、Stencil三个buffer
-        commandBuffer.ClearRenderTarget(true, true, Color.clear); 
+        //渲染前ClearRT设置  是否清除Depth、Color、Stencil三个buffer
+        commandBuffer.ClearRenderTarget(
+            clearFlags <= CameraClearFlags.Depth,
+            clearFlags == CameraClearFlags.Color,
+            clearFlags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear
+        );
+        //commandBuffer.ClearRenderTarget(true, true, Color.clear); 
 
         ExecuteBuffer();
 
@@ -227,6 +246,36 @@ public class CameraRenderer
         FilteringSettings filteringSettings = FilteringSettings.defaultValue;
         context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
     }
+
+    /// <summary>
+    /// 画Gizmos
+    /// </summary>
+    void DrawGizmos()
+    {
+        if (UnityEditor.Handles.ShouldRenderGizmos())
+        {
+            context.DrawGizmos(camera, GizmoSubset.PreImageEffects);
+            context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
+        }
+    }
+
+    /// <summary>
+    /// 让UI可以在Scene渲染
+    /// </summary>
+    void PrepareUIForSceneWindow()
+    {
+        if(camera.cameraType == CameraType.SceneView)
+        {
+            ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
+        }
+    }
+
+#if UNITY_EDITOR
+    void PrepareCameraBuffer()
+    {
+        commandBuffer.name = sampleName = camera.name;
+    }
+#endif
 
     void Submit()
     {
