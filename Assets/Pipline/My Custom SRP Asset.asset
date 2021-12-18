@@ -12,3 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a165e65ad0ae38749a38d73330c96012, type: 3}
   m_Name: My Custom SRP Asset
   m_EditorClassIdentifier: 
+  UseDynamicBatching: 0
+  UseGPUInstancing: 1
+  UseSRPBatcher: 1

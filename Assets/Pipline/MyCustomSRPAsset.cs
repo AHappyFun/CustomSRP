@@ -11,9 +11,12 @@ using Conditional = System.Diagnostics.ConditionalAttribute;
 [CreateAssetMenu(menuName = "Rendering/我的自定义SRP")]
 public class MyCustomSRPAsset : RenderPipelineAsset
 {
+    [SerializeField]
+    bool UseDynamicBatching = true, UseGPUInstancing = true, UseSRPBatcher = true;
+
     protected override RenderPipeline CreatePipeline()
     {
-        return new CustomRP();
+        return new CustomRP(UseDynamicBatching, UseGPUInstancing, UseSRPBatcher);
     }
 }
 
@@ -24,11 +27,18 @@ public class CustomRP: RenderPipeline
     private ScriptableCullingParameters cullingParameters;
     private CullingResults cullResults;
 
+    bool useDynamicBatch, useGPUInstance;
+
     CameraRenderer renderer = new CameraRenderer();
 
-    public CustomRP()
+
+    public CustomRP(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher)
     {
         cullResults = new CullingResults();
+
+        this.useDynamicBatch = useDynamicBatching;
+        this.useGPUInstance = useGPUInstancing;
+        GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
     }
 
    //public override void Dispose(bool disposing)
@@ -42,7 +52,7 @@ public class CustomRP: RenderPipeline
         //base.Render(renderContext, cameras);
         foreach (var cam in cameras)
         {
-            renderer.Render(renderContext, cam);       
+            renderer.Render(renderContext, cam, this.useDynamicBatch, this.useGPUInstance);       
         }
     }
 
@@ -152,7 +162,7 @@ public class CameraRenderer
 #endif
     private CommandBuffer commandBuffer = new CommandBuffer { name = bufferName };
 
-    public void Render(ScriptableRenderContext ctx, Camera cam)
+    public void Render(ScriptableRenderContext ctx, Camera cam, bool useDynamicBatch, bool useGPUIInstance)
     {
         context = ctx;
         camera = cam;
@@ -171,7 +181,7 @@ public class CameraRenderer
 
         Setup();
 
-        DrawVisableGeometry();
+        DrawVisableGeometry(useDynamicBatch, useGPUIInstance);
 
         DrawUnsupportShaders();
 
@@ -205,7 +215,7 @@ public class CameraRenderer
     /// <summary>
     /// 画几何体
     /// </summary>
-    void DrawVisableGeometry()
+    void DrawVisableGeometry(bool useDynamicBatch, bool useGPUIInstance)
     {
         //排序设置、绘制设置 、过滤设置
         SortingSettings sortingSettings = new SortingSettings(camera) {
@@ -213,7 +223,11 @@ public class CameraRenderer
         };
 
         //不透明
-        DrawingSettings drawingSettings = new DrawingSettings(unlitShaderTagID, sortingSettings);
+        DrawingSettings drawingSettings = new DrawingSettings(unlitShaderTagID, sortingSettings) {
+            enableDynamicBatching = useDynamicBatch,
+            enableInstancing = useGPUIInstance
+        };
+
         FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
         context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
 
