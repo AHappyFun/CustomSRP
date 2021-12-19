@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
@@ -9,7 +10,7 @@ using Conditional = System.Diagnostics.ConditionalAttribute;
 /// 继承RenderPipelineAsset，是ScriptObject类型，相当于把管线的配置给序列化保存了
 /// </summary>
 [CreateAssetMenu(menuName = "Rendering/我的自定义SRP")]
-public class MyCustomSRPAsset : RenderPipelineAsset
+public class CustomRPAsset : RenderPipelineAsset
 {
     [SerializeField]
     bool UseDynamicBatching = true, UseGPUInstancing = true, UseSRPBatcher = true;
@@ -39,6 +40,7 @@ public class CustomRP: RenderPipeline
         this.useDynamicBatch = useDynamicBatching;
         this.useGPUInstance = useGPUInstancing;
         GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
+        GraphicsSettings.lightsUseLinearIntensity = true;
     }
 
    //public override void Dispose(bool disposing)
@@ -143,7 +145,12 @@ public class CameraRenderer
 
     Camera camera;
 
+    static Material errorMat;
+
+    Lighting lighting = new Lighting();
+
     static ShaderTagId unlitShaderTagID = new ShaderTagId("SRPDefaultUnlit");
+    static ShaderTagId litShaderTagID = new ShaderTagId("CustomLit");
     static ShaderTagId[] legacyShaderTagIds =
     {
         new ShaderTagId("ForwardBase"),
@@ -154,7 +161,6 @@ public class CameraRenderer
         new ShaderTagId("VertexLM")
     };
 
-    static Material errorMat;
 
     const string bufferName = "---Render Camera---";
 # if UNITY_EDITOR
@@ -180,6 +186,8 @@ public class CameraRenderer
         }
 
         Setup();
+
+        lighting.Setup(context, cullingResults);
 
         DrawVisableGeometry(useDynamicBatch, useGPUIInstance);
 
@@ -227,6 +235,7 @@ public class CameraRenderer
             enableDynamicBatching = useDynamicBatch,
             enableInstancing = useGPUIInstance
         };
+        drawingSettings.SetShaderPassName(1, litShaderTagID);
 
         FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
         context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
@@ -316,5 +325,65 @@ public class CameraRenderer
             return true;
         }
         return false;
+    }
+}
+
+public class Lighting
+{
+
+    CullingResults cullingResults;
+
+    const int maxDirLightCount = 4;
+    static int dirLightCountID = Shader.PropertyToID("_DirectionLightCount"); //Buildin也为最多4个
+    static int dirLightColorsID = Shader.PropertyToID("_DirectionLightColors");
+    static int dirLightDirectionsID = Shader.PropertyToID("_DirectionLightDirections");
+
+    static Vector4[] dirLightColors = new Vector4[maxDirLightCount];
+    static Vector4[] dirLightDirs = new Vector4[maxDirLightCount];
+
+    const string bufferName = "Lighting";
+    CommandBuffer buffer = new CommandBuffer
+    {
+        name = bufferName
+    };
+
+    public void Setup(ScriptableRenderContext context, CullingResults cullingResults)
+    {
+        this.cullingResults = cullingResults;
+
+        buffer.BeginSample(bufferName);
+        SetupLights();
+        buffer.EndSample(bufferName);
+
+        context.ExecuteCommandBuffer(buffer);
+        buffer.Clear();
+    }
+
+    void SetupLights()
+    {
+        NativeArray<VisibleLight> visableLights = cullingResults.visibleLights;
+        for (int i = 0; i < visableLights.Length; i++)
+        {          
+            VisibleLight light = visableLights[i];
+            if(light.lightType == LightType.Directional)
+            {
+                SetupDirectionalLight(i, ref light);
+                if (i >= maxDirLightCount)
+                {
+                    break;
+                }
+            }
+
+        }
+        buffer.SetGlobalInt(dirLightCountID, visableLights.Length);
+        buffer.SetGlobalVectorArray(dirLightColorsID, dirLightColors);
+        buffer.SetGlobalVectorArray(dirLightDirectionsID, dirLightDirs);
+    }
+
+    //传递灯光数据到Shader里
+    void SetupDirectionalLight(int lightIndex, ref VisibleLight light)
+    {
+        dirLightColors[lightIndex] = light.finalColor;
+        dirLightDirs[lightIndex] = -light.localToWorldMatrix.GetColumn(2); //从矩阵里拿到灯的方向
     }
 }

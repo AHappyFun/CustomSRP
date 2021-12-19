@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Unlit_URP sam 2
-  m_Shader: {fileID: 4800000, guid: fa7acc9b6fb224c4399ec6b46ce26e30, type: 3}
+  m_Name: CustomRP_CRP Lit 2
+  m_Shader: {fileID: 4800000, guid: bf3f65dd57dd8994cbba1a6c42853500, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -21,4 +21,4 @@ Material:
     m_TexEnvs: []
     m_Floats: []
     m_Colors:
-    - _BaseColor: {r: 0, g: 0.5461464, b: 1, a: 1}
+    - _BaseColor: {r: 0.6402849, g: 0, b: 0.8962264, a: 1}

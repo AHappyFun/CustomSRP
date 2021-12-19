@@ -7,21 +7,21 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Unlit_URP sam
+  m_Name: CustomRP_CRP Unlit 3
   m_Shader: {fileID: 4800000, guid: fa7acc9b6fb224c4399ec6b46ce26e30, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs: []
     m_Floats:
-    - _DstBlend: 6
-    - _SrcBlend: 3
+    - _DstBlend: 0
+    - _SrcBlend: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.048891068, g: 1, b: 0, a: 0.5686275}
+    - _BaseColor: {r: 0.4039216, g: 0.627451, b: 0.9803922, a: 1}
