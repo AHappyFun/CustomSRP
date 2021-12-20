@@ -6,20 +6,6 @@ using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using Conditional = System.Diagnostics.ConditionalAttribute;
 
-/// <summary>
-/// 继承RenderPipelineAsset，是ScriptObject类型，相当于把管线的配置给序列化保存了
-/// </summary>
-[CreateAssetMenu(menuName = "Rendering/我的自定义SRP")]
-public class CustomRPAsset : RenderPipelineAsset
-{
-    [SerializeField]
-    bool UseDynamicBatching = true, UseGPUInstancing = true, UseSRPBatcher = true;
-
-    protected override RenderPipeline CreatePipeline()
-    {
-        return new CustomRP(UseDynamicBatching, UseGPUInstancing, UseSRPBatcher);
-    }
-}
 
 //自定义管线类，继承RenderPipeline，主要实现Render方法
 public class CustomRP: RenderPipeline

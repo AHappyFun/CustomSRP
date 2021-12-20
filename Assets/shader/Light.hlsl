@@ -28,4 +28,6 @@ Light GetDirectionLight(int lightIndex){
 	return light;
 }
 
+
+
 #endif

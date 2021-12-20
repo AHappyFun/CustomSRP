@@ -19,6 +19,9 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs: []
-    m_Floats: []
+    m_Floats:
+    - _AlphaCutoff: 0
+    - _Metallic: 0.748
+    - _Smoothness: 0.374
     m_Colors:
     - _BaseColor: {r: 0.5660378, g: 0.5660378, b: 0.5660378, a: 1}
