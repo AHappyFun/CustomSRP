@@ -4,6 +4,7 @@
 
 CBUFFER_START(UnityPerMaterial)
 half4 _BaseColor;
+sampler2D _BaseTexture;
 float _Metallic;
 float _Smoothness;
 float _AlphaCutoff;
@@ -12,12 +13,14 @@ CBUFFER_END
 struct a2v{
 	float3 vertex: POSITION;
 	float3 normal: NORMAL;
+	float2 uv: TEXCOORD0;
 };
 
 struct v2f{
 	float4 pos : SV_POSITION;
 	float3 worldNormal: VAR_NORMAL;
 	float3 worldPos :VAR_POSITION;
+	float2 uv : TEXCOORD0;
 };
 
 struct Surface{
@@ -52,25 +55,36 @@ v2f vert(a2v i){
 	o.pos = TransformObjectToHClip(i.vertex.xyz);
 	o.worldNormal = TransformObjectToWorldNormal(i.normal);
 	o.worldPos = TransformObjectToWorld(i.vertex.xyz);
+	o.uv = i.uv;
 	return o;
 }
 
   half4 frag(v2f v):SV_TARGET
  {
-
+	
+	  half4 tex = tex2D(_BaseTexture, v.uv);
+	
 	  Surface s;
 	  s.normal = normalize(v.worldNormal);
 	  s.viewDir = normalize(_WorldSpaceCameraPos - v.worldPos);
-	  s.color = _BaseColor.rgb;
-	  s.alpha = _BaseColor.a;
+	  s.color = _BaseColor.rgb * tex.rgb;
+	  s.alpha = tex.a;
 	  s.metallic = _Metallic;
 	  s.smoothness = _Smoothness;
 
-	  BRDF brdf = GetBRDF(s);
+	  #if defined(_CLIPPING)
+		clip(s.alpha - _AlphaCutoff);
+	  #endif
+
+	  #if defined(_PREMULTIPY_ALPHA)
+		BRDF brdf = GetBRDF(s, true);
+	  #else 
+		BRDF brdf = GetBRDF(s);
+	  #endif
 
 	  float3 color = GetLighting(s, brdf);
 
-      return half4(color, 1);
+      return half4(color, s.alpha);
  }
 
 #endif

@@ -35,10 +35,13 @@ float3 DirectBRDF(Surface surface, BRDF brdf, Light light){
 	return SpecularStrength(surface, brdf, light) * brdf.specular + brdf.diffuse;
 }
 
-BRDF GetBRDF(Surface surface){
+BRDF GetBRDF(Surface surface, bool preMultipyAlpha = false){
 	BRDF brdf;
 	float oneMinusReflect = OneMinusReflect(surface.metallic); //金属度越高，diffuse越少
 	brdf.diffuse = surface.color * oneMinusReflect;
+	if(preMultipyAlpha){	
+		brdf.diffuse *= surface.alpha;
+	}
 	//brdf.specular = surface.color - brdf.diffuse; //能量守恒
 	brdf.specular = lerp(MIN_REFLECT, surface.color, surface.metallic); //随着金属度也差不多
 
