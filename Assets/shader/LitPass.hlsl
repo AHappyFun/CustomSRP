@@ -1,10 +1,14 @@
 #ifndef CUSTOM_LIT_PASS_INCLUDE
-
 #define CUSTOM_LIT_PASS_INCLUDE
 
+#include "Surface.hlsl"
+#include "Shadows.hlsl"
+#include "Light.hlsl"
+#include "BRDF.hlsl"
+
+sampler2D _BaseTexture;
 CBUFFER_START(UnityPerMaterial)
 half4 _BaseColor;
-sampler2D _BaseTexture;
 float _Metallic;
 float _Smoothness;
 float _AlphaCutoff;
@@ -23,29 +27,18 @@ struct v2f{
 	float2 uv : TEXCOORD0;
 };
 
-struct Surface{
-	float3 normal;
-	float3 viewDir;
-	float3 color;
-	float alpha;
-	float metallic;
-	float smoothness;
-};
-
-#include "BRDF.hlsl"
-
 float3 InComingLight(Surface v , Light light, BRDF brdf){
-	return saturate(dot(v.normal, light.direction)) * light.color;
+	return saturate(dot(v.normal, light.direction)) * light.attenuation * light.color;
 }
 
 float3 GetLighting(Surface surface, Light light, BRDF brdf){
 	return InComingLight(surface, light, brdf) * DirectBRDF(surface, brdf, light);
 }
 
-float3 GetLighting(Surface v, BRDF brdf){
+float3 GetLighting(Surface surfaceWS, BRDF brdf){
 	float3 color = 0.0;
 	for(int i = 0; i < GetDirLightCount(); i++){
-		color += GetLighting(v, GetDirectionLight(i), brdf) * v.color;
+		color += GetLighting(surfaceWS, GetDirectionLight(i, surfaceWS), brdf) * surfaceWS.color;
 	}
 	return color;
 }
@@ -65,6 +58,7 @@ v2f vert(a2v i){
 	  half4 tex = tex2D(_BaseTexture, v.uv);
 	
 	  Surface s;
+	  s.position = v.worldPos;
 	  s.normal = normalize(v.worldNormal);
 	  s.viewDir = normalize(_WorldSpaceCameraPos - v.worldPos);
 	  s.color = _BaseColor.rgb * tex.rgb;

@@ -1,6 +1,4 @@
-
 #ifndef CUSTOM_BRDF_INCLUDE
-
 #define CUSTOM_BRDF_INCLUDE
 
 

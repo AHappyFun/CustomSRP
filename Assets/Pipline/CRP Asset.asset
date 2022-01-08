@@ -15,3 +15,5 @@ MonoBehaviour:
   UseDynamicBatching: 1
   UseGPUInstancing: 1
   UseSRPBatcher: 1
+  shadowSetting:
+    maxDistance: 30

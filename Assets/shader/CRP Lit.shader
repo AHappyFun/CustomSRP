@@ -37,14 +37,27 @@
 
 			#pragma target 3.5
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/core.hlsl"
-			#include "Light.hlsl"
 			#include "LitPass.hlsl"
-			//#include "BRDF.hlsl"
-
 
 			#pragma vertex vert
 			#pragma fragment frag
 
+			ENDHLSL
+		}
+
+		Pass
+		{
+			Tags{
+				"LightMode" = "ShadowCaster"
+			}
+			ColorMask 0
+
+			HLSLPROGRAM
+			#pragma target 3.5
+			#pragma shader_feature _CLIPPING
+			#pragma vertex ShadowCasterPassVertex
+			#pragma fragment ShadowCasterPassFragment
+			#include "ShadowCasterPass.hlsl" 
 			ENDHLSL
 		}
     }
