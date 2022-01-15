@@ -15,6 +15,7 @@ public class CustomRP: RenderPipeline
     private CullingResults cullResults;
 
     bool useDynamicBatch, useGPUInstance;
+
     ShadowSetting shadowSettings;
 
     CameraRenderer renderer = new CameraRenderer();

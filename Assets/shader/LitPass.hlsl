@@ -36,9 +36,11 @@ float3 GetLighting(Surface surface, Light light, BRDF brdf){
 }
 
 float3 GetLighting(Surface surfaceWS, BRDF brdf){
+	MyShadowData shadowData = GetShadowData(surfaceWS);
 	float3 color = 0.0;
 	for(int i = 0; i < GetDirLightCount(); i++){
-		color += GetLighting(surfaceWS, GetDirectionLight(i, surfaceWS), brdf) * surfaceWS.color;
+		Light light = GetDirectionLight(i, surfaceWS, shadowData);
+		color += GetLighting(surfaceWS, light, brdf);// * surfaceWS.color;
 	}
 	return color;
 }
