@@ -193,6 +193,7 @@ public class CameraRenderer
 
     void Setup()
     {
+        //设置摄像机的MVP矩阵以及其他属性
         context.SetupCameraProperties(camera);
 
         CameraClearFlags clearFlags = camera.clearFlags;

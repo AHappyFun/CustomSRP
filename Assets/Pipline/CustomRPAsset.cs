@@ -19,4 +19,6 @@ public class CustomRPAsset : RenderPipelineAsset
     {
         return new CustomRP(UseDynamicBatching, UseGPUInstancing, UseSRPBatcher, shadowSetting);
     }
+
+    
 }

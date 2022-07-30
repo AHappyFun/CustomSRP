@@ -1,0 +1,20 @@
+#ifndef CUSTOM_UNITY_INPUT_INCLUDE
+#define CUSTOM_UNITY_INPUT_INCLUDE
+
+CBUFFER_START(UnityPerDraw)
+	float4x4 unity_ObjectToWorld;   //每次物体绘制的时候设置，每个物体单独一个矩阵
+	float4x4 unity_WorldToObject;
+	float4 unity_LODFade;
+	real4 unity_WorldTransformParams;  //real不是有效类型，取决于平台的float或half
+CBUFFER_END
+
+CBUFFER_START(UnityPerFrame)
+	float4x4 unity_MatrixVP;  //每个摄像机绘制的时候有一个，同一摄像机共用
+CBUFFER_END
+
+ float4x4 unity_MatrixV;
+ float4x4 glstate_matrix_projection;
+
+
+
+#endif 

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6df75aa7aa75964b88db1505778cb2b, type: 3}
   m_Name: CRP Asset
   m_EditorClassIdentifier: 
-  UseDynamicBatching: 1
+  UseDynamicBatching: 0
   UseGPUInstancing: 1
-  UseSRPBatcher: 1
+  UseSRPBatcher: 0
   shadowSetting:
     maxDistance: 30
     directional:

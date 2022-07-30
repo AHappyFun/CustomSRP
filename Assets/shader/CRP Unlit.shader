@@ -26,11 +26,12 @@
 			
 			#pragma shader_feature _CLIPPING
 
-			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/core.hlsl"
+			
 			#include "UnlitPass.hlsl"
 
-			#pragma vertex vert
-			#pragma fragment frag
+			#pragma multi_compile_instancing
+			#pragma vertex unlitVert
+			#pragma fragment unlitFrag
 
 			ENDHLSL
 		}
