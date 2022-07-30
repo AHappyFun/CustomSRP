@@ -2,8 +2,9 @@
 #define CUSTOM_BRDF_INCLUDE
 
 
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
-#include "Common.hlsl"
+#include "UnityInput.hlsl"
 
 struct BRDF{
 	float3 diffuse;

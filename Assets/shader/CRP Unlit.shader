@@ -27,7 +27,7 @@
 			#pragma shader_feature _CLIPPING
 
 			
-			#include "UnlitPass.hlsl"
+			#include "ShaderLibrary/UnlitPass.hlsl"
 
 			#pragma multi_compile_instancing
 			#pragma vertex unlitVert

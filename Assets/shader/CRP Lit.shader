@@ -36,11 +36,11 @@
 			#pragma shader_feature _PREMULTIPY_ALPHA
 
 			#pragma target 3.5
-			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/core.hlsl"
-			#include "LitPass.hlsl"
+			//#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/core.hlsl"
+			#include "ShaderLibrary/LitPass.hlsl"
 
-			#pragma vertex vert
-			#pragma fragment frag
+			#pragma vertex litVert
+			#pragma fragment litFrag
 
 			ENDHLSL
 		}
@@ -57,7 +57,7 @@
 			#pragma shader_feature _CLIPPING
 			#pragma vertex ShadowCasterPassVertex
 			#pragma fragment ShadowCasterPassFragment
-			#include "ShadowCasterPass.hlsl" 
+			#include "ShaderLibrary/ShadowCasterPass.hlsl" 
 			ENDHLSL
 		}
     }

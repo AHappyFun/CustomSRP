@@ -28,7 +28,7 @@ Material:
     - _AlphaCutoff: 0
     - _Clipping: 0
     - _DstBlend: 0
-    - _Metallic: 0.823
+    - _Metallic: 0.667
     - _PremulAlpha: 0
     - _Smoothness: 0.862
     - _SrcBlend: 1
