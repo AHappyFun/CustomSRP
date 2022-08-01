@@ -32,6 +32,7 @@
 
 			HLSLPROGRAM
 
+			#pragma multi_compile_instancing
 			#pragma shader_feature _CLIPPING
 			#pragma shader_feature _PREMULTIPY_ALPHA
 
@@ -54,6 +55,7 @@
 
 			HLSLPROGRAM
 			#pragma target 3.5
+			#pragma multi_compile_instancing
 			#pragma shader_feature _CLIPPING
 			#pragma vertex ShadowCasterPassVertex
 			#pragma fragment ShadowCasterPassFragment

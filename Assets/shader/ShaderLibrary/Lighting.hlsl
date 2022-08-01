@@ -2,12 +2,12 @@
 #define CUSTOM_LIGHTING_INCLUDE
 
 
-float3 InComingLight(Surface v , Light light, BRDF brdf){
-	return saturate(dot(v.normal, light.direction)) * light.attenuation * light.color;
+float3 InComingLight(Surface v , Light light){
+	return saturate(dot(v.normal, light.direction) * light.attenuation) * light.color;
 }
 
 float3 GetLighting(Surface surface, Light light, BRDF brdf){
-	return InComingLight(surface, light, brdf) * DirectBRDF(surface, brdf, light);
+	return InComingLight(surface, light) * DirectBRDF(surface, brdf, light);
 }
 
 float3 GetLighting(Surface surfaceWS, BRDF brdf){

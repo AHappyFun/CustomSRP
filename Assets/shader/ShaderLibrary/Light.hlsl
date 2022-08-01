@@ -11,7 +11,7 @@ struct Light {
 	float attenuation;
 };
 
-//Õâ¸öÊı¾İCusRP´ÓCPU·¢ËÍ¹ıÀ´
+//è¿™ä¸ªæ•°æ®CusRPä»CPUå‘é€è¿‡æ¥
 CBUFFER_START(_CustomLight)
 int _DirectionLightCount;
 float4 _DirectionLightColors[MAX_DIRECTIONLIGHTCOUNT];
@@ -25,8 +25,9 @@ int GetDirLightCount() {
 
 DirectionalShadowData GetDirectionalShadowData(int lightIndex, MyShadowData shadowData) {
 	DirectionalShadowData data;
-	data.strength = _DirectionLightShadowData[lightIndex].x;
-	data.tileOffset = _DirectionLightShadowData[lightIndex].y + shadowData.cascadeIndex;
+	data.strength = _DirectionLightShadowData[lightIndex].x * shadowData.strength;
+	data.tileIndex = _DirectionLightShadowData[lightIndex].y + shadowData.cascadeIndex;
+	data.normalBias = _DirectionLightShadowData[lightIndex].z;
 	return data;
 }
 
@@ -35,7 +36,7 @@ Light GetDirectionLight(int lightIndex, Surface surfaceWS, MyShadowData shadowDa
 	light.color = _DirectionLightColors[lightIndex].rgb;
 	light.direction = _DirectionLightDirections[lightIndex].xyz;
 	DirectionalShadowData dirShadowData = GetDirectionalShadowData(lightIndex, shadowData);
-	light.attenuation = GetDirectionalShadowAttenuation(dirShadowData, surfaceWS);
+	light.attenuation = GetDirectionalShadowAttenuation(dirShadowData, shadowData, surfaceWS);
 	//light.attenuation = shadowData.cascadeIndex * 0.25;
 	return light;
 }

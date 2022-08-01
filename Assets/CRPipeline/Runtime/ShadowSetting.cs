@@ -15,8 +15,11 @@ public class ShadowSetting
         _8192 = 8192
     }
      
-    [Min(0f)]
+    [Min(0.001f)]
     public float maxDistance = 100f;
+
+    [Range(0.001f, 1f)]
+    public float distanceFade = 0.1f;
 
     [System.Serializable]
     public struct Directional
@@ -25,6 +28,9 @@ public class ShadowSetting
 
         [Range(1,4)]
         public int cascadeCount;
+
+        [Range(0.001f, 1f)]
+        public float cascadeFade;  //cascade层级也需要渐进
 
         [Range(0f, 1f)]
         public float cascadeRatio1, cascadeRatio2, cascadeRatio3;
@@ -38,7 +44,8 @@ public class ShadowSetting
         cascadeCount = 4,
         cascadeRatio1 = 0.1f,
         cascadeRatio2 = 0.25f,
-        cascadeRatio3 = 0.5f
+        cascadeRatio3 = 0.5f,
+        cascadeFade = 0.1f
     };
 
 

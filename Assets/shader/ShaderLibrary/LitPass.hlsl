@@ -8,7 +8,7 @@
 #include "ShaderLibrary/BRDF.hlsl"
 #include "ShaderLibrary/Lighting.hlsl"
 
-TEXTURE2D(_BaseTexture);   //ÎÆÀíºÍ²ÉÑùÆ÷²»¿ÉÒÔÊµÀı
+TEXTURE2D(_BaseTexture);   //çº¹ç†å’Œé‡‡æ ·å™¨ä¸å¯ä»¥å®ä¾‹
 SAMPLER(sampler_BaseTexture);
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
@@ -39,8 +39,8 @@ struct Varyings{
 Varyings litVert(Attributes i){
 	Varyings o;
 	o.pos = TransformObjectToHClip(i.vertex.xyz);
-	//o.worldNormal = mul(UNITY_MATRIX_M, i.normal);  //²»ÕıÈ·µÄĞ´·¨
-	o.worldNormal = TransformObjectToWorldNormal(i.normal);  //ÕıÈ·µÄĞ´·¨
+	//o.worldNormal = mul(UNITY_MATRIX_M, i.normal);  //ä¸æ­£ç¡®çš„å†™æ³•
+	o.worldNormal = TransformObjectToWorldNormal(i.normal);  //æ­£ç¡®çš„å†™æ³•
 	o.worldPos = TransformObjectToWorld(i.vertex.xyz);
 	o.uv = i.uv;
 	return o;
@@ -58,6 +58,7 @@ half4 litFrag(Varyings v) :SV_TARGET
 	  s.position = v.worldPos;
 	  s.normal = normalize(v.worldNormal);
 	  s.viewDir = normalize(_WorldSpaceCameraPos - v.worldPos);
+	  s.depth = -TransformWorldToView(v.worldPos).z; //æ‘„åƒæœºç©ºé—´-Z unityå‰æ–¹æ˜¯-Z
 	  s.color = albedo * baseTex.rgb;
 	  s.alpha = baseTex.a;
 	  s.metallic = UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Metallic);

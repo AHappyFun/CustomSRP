@@ -4,7 +4,7 @@
 
 #include "ShaderLibrary/Common.hlsl"
 
-TEXTURE2D(_BaseTexture);   //ÎÆÀíºÍ²ÉÑùÆ÷²»¿ÉÒÔÊµÀı
+TEXTURE2D(_BaseTexture);   //çº¹ç†å’Œé‡‡æ ·å™¨ä¸å¯ä»¥å®ä¾‹
 SAMPLER(sampler_BaseTexture);
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
