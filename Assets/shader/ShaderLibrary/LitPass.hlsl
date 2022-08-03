@@ -63,6 +63,7 @@ half4 litFrag(Varyings v) :SV_TARGET
 	  s.alpha = baseTex.a;
 	  s.metallic = UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Metallic);
 	  s.smoothness = UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Smoothness);
+	  s.dither = InterleavedGradientNoise(v.pos.xy, 0);
 
 	  //
 	  #if defined(_CLIPPING)

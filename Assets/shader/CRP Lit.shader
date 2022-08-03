@@ -34,6 +34,8 @@
 
 			#pragma multi_compile_instancing
 			#pragma shader_feature _CLIPPING
+			#pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
+			#pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
 			#pragma shader_feature _PREMULTIPY_ALPHA
 
 			#pragma target 3.5

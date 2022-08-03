@@ -14,14 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UseDynamicBatching: 0
   UseGPUInstancing: 1
-  UseSRPBatcher: 1
+  UseSRPBatcher: 0
   shadowSetting:
-    maxDistance: 10.17
+    maxDistance: 33.95
     distanceFade: 0.1
     directional:
-      atlasSize: 1024
+      atlasSize: 4096
+      filter: 2
       cascadeCount: 4
       cascadeFade: 0.1
       cascadeRatio1: 0.3
       cascadeRatio2: 0.4
       cascadeRatio3: 0.5
+      cascadeBlend: 1
