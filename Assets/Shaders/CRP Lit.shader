@@ -9,6 +9,8 @@
 		_AlphaCutoff("Alpha CutOff", Range(0,1)) = 0
 
 		[Toggle(_CLIPPING)] _Clipping("AlphaTest", float) = 0
+    	[KeywordEnum(On, Clip, Dither, Off)] _Shadows("Shadows", float) = 0
+    	[Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows("Receive Shadows", float) = 1
 		[Toggle(_PREMULTIPY_ALPHA)] _PremulAlpha("Pre Mul Alpha", float) = 0
 
 		[Enum(UnityEngine.Rendering.BlendMode)]_SrcBlend("Src Blend", float) = 1
@@ -34,6 +36,8 @@
 
 			#pragma multi_compile_instancing
 			#pragma shader_feature _CLIPPING
+			#pragma shader_feature _RECEIVE_SHADOWS
+			
 			#pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
 			#pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
 			#pragma shader_feature _PREMULTIPY_ALPHA
@@ -58,7 +62,8 @@
 			HLSLPROGRAM
 			#pragma target 3.5
 			#pragma multi_compile_instancing
-			#pragma shader_feature _CLIPPING
+			//#pragma shader_feature _CLIPPING
+			#pragma shader_feature _ _SHADOWS_CLIP _SHADOWS_DITHER
 			#pragma vertex ShadowCasterPassVertex
 			#pragma fragment ShadowCasterPassFragment
 			#include "ShaderLibrary/ShadowCasterPass.hlsl" 

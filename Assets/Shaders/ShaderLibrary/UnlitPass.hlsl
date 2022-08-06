@@ -50,7 +50,7 @@ half4 unlitFrag(Varyings input) :SV_TARGET
 	 clip(baseTex.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlphaCutoff));
 #endif
 
-	 return baseTex * baseColor ;
+	 return finalColor ;
 
  }
 
