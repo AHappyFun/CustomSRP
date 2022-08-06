@@ -42,6 +42,7 @@
 			#pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
 			#pragma shader_feature _PREMULTIPY_ALPHA
 
+			//需要处理Loop GLES3.0 
 			#pragma target 3.5
 			//#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/core.hlsl"
 			#include "ShaderLibrary/LitPass.hlsl"

@@ -13,8 +13,9 @@ public class CameraRenderer
 
     Lighting lighting = new Lighting();
 
-    static ShaderTagId unlitShaderTagID = new ShaderTagId("SRPDefaultUnlit");
-    static ShaderTagId litShaderTagID = new ShaderTagId("CustomLit");
+    static ShaderTagId unlitShaderTagID = new ShaderTagId("SRPDefaultUnlit"); //SRP默认Tag
+    static ShaderTagId litShaderTagID = new ShaderTagId("CustomLit");  //自定义受光材质Tag
+    //buildin 旧Tag
     static ShaderTagId[] legacyShaderTagIds =
     {
         new ShaderTagId("ForwardBase"),
@@ -50,6 +51,7 @@ public class CameraRenderer
         }
         commandBuffer.BeginSample(sampleName);
         ExecuteBuffer();
+        //设置灯光数据
         lighting.Setup(context, cullingResults, shadowSetting);
         commandBuffer.EndSample(sampleName);
 

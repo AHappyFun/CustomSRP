@@ -29,7 +29,7 @@ public class CustomRP: RenderPipeline
         this.useGPUInstance = useGPUInstancing;
         this.shadowSettings = shadowSetting;
         GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
-        GraphicsSettings.lightsUseLinearIntensity = true;
+        GraphicsSettings.lightsUseLinearIntensity = true; //灯光线性空间
     }
 
    //public override void Dispose(bool disposing)

@@ -43,19 +43,21 @@ public class Lighting
 
     void SetupLights()
     {
+        //只设置可见光 剔除结果
         NativeArray<VisibleLight> visableLights = cullingResults.visibleLights;
+
+        int dirLightCount = 0;
         for (int i = 0; i < visableLights.Length; i++)
         {
             VisibleLight light = visableLights[i];
             if (light.lightType == LightType.Directional)
             {
-                SetupDirectionalLight(i, ref light);
-                if (i >= maxDirLightCount)
+                SetupDirectionalLight(dirLightCount++, ref light);
+                if (dirLightCount >= maxDirLightCount)
                 {
                     break;
                 }
             }
-
         }
         buffer.SetGlobalInt(dirLightCountID, visableLights.Length);
         buffer.SetGlobalVectorArray(dirLightColorsID, dirLightColors);
@@ -66,9 +68,9 @@ public class Lighting
     //传递灯光数据到Shader里
     void SetupDirectionalLight(int lightIndex, ref VisibleLight light)
     {
-        dirLightColors[lightIndex] = light.finalColor;
-        dirLightDirs[lightIndex] = -light.localToWorldMatrix.GetColumn(2); //从矩阵里拿到灯的方向       
-        dirLightShadowData[lightIndex] = shadows.ReserveDirectionalShadows(light.light, lightIndex);
+        dirLightColors[lightIndex] = light.finalColor;  //finalColor已经被instensity影响，unity默认没有转换到线性空间
+        dirLightDirs[lightIndex] = -light.localToWorldMatrix.GetColumn(2); //从矩阵里拿到灯的方向，就是Z轴的方向       
+        dirLightShadowData[lightIndex] = shadows.ReserveDirectionalShadows(light.light, lightIndex); //灯光的阴影数据
     }
 
     public void CleanUp()
