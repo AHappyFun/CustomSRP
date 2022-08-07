@@ -33,8 +33,11 @@ public class Lighting
 
         buffer.BeginSample(bufferName);
         shadows.Setup(context, cullingResults, shadowSetting);
+        //灯光数据
         SetupLights();
+        //渲染ShadowMap
         shadows.Render();
+        
         buffer.EndSample(bufferName);
 
         context.ExecuteCommandBuffer(buffer);

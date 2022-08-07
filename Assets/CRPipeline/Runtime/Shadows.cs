@@ -14,7 +14,7 @@ public class Shadows
     //开阴影的方向光有数量限制
     ShadowedDirectionalLight[] shadowedDirectionLights = new ShadowedDirectionalLight[maxShadowdDirectionalLightCount];
 
-    const string bufferName = "shadows";
+    const string bufferName = "ShadowMap";
 
     const int maxShadowdDirectionalLightCount = 4 , maxCascades = 4;
 
@@ -49,6 +49,7 @@ public class Shadows
         "_DIRECTIONAL_PCF7"
     };
 
+    //级联渐变方式
     private static string[] cascadeBlendKeywords =
     {
         "_CASCADE_BLEND_SOFT",
@@ -63,11 +64,17 @@ public class Shadows
         ShadowedDirectionLightCount = 0;
     }
 
+    //记录当前平行光数量
     int ShadowedDirectionLightCount;
+    
+    //灯光阴影Data
     public Vector3 ReserveDirectionalShadows(Light light, int visableLightIndex)
     {
-        //追踪投射的灯光条件 1.数量 2.灯开了阴影 3.阴影强度 4.阴影没被剔除
-        if(ShadowedDirectionLightCount < maxShadowdDirectionalLightCount && light.shadows != LightShadows.None && light.shadowStrength > 0f && cullingResults.GetShadowCasterBounds(visableLightIndex, out Bounds b))
+        //追踪投射阴影的灯光条件 1.数量没超限制 2.灯开了阴影 3.阴影强度不为0 4.GetShadowCasterBounds光源在场景里是否至少有一个ShadowCaster的物体
+        if(ShadowedDirectionLightCount < maxShadowdDirectionalLightCount 
+           && light.shadows != LightShadows.None 
+           && light.shadowStrength > 0f 
+           && cullingResults.GetShadowCasterBounds(visableLightIndex, out Bounds b))
         {
             shadowedDirectionLights[ShadowedDirectionLightCount] = new ShadowedDirectionalLight {
                 visibleLightIndex = visableLightIndex,
@@ -95,20 +102,28 @@ public class Shadows
         {
             RenderDirectionalShadows();
         }
+        else
+        {
+            //默认ShadowMap
+            buffer.GetTemporaryRT(dirShadowAtlasId, 1, 1, 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
+        }
     }
 
-    //渲染每个灯光的ShadowMap，多灯光就要进行分块
+    //渲染平行光的ShadowMap，多灯光就要进行分块
     void RenderDirectionalShadows()
     {
         int atlasSize = (int)settings.directional.atlasSize;
         //请求RT
         buffer.GetTemporaryRT(dirShadowAtlasId, atlasSize, atlasSize, 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
-        //切换RenderTarget
+        //切换RenderTarget到ShadowMap
         buffer.SetRenderTarget(dirShadowAtlasId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+        //ClearBuffer先
         buffer.ClearRenderTarget(true, false, Color.clear);
 
         buffer.BeginSample(bufferName);
         ExecuteBuffer();
+        
+        //ShadowMap划分Tile 4x4
         int tiles = ShadowedDirectionLightCount * settings.directional.cascadeCount;
         int split = tiles <= 1 ? 1 : (tiles <= 4 ? 2 : 4);
         int tileSize = atlasSize / split;
@@ -127,22 +142,24 @@ public class Shadows
         SetKeywords(directionalFilterKeywords, (int)settings.directional.filter - 1);
         SetKeywords(cascadeBlendKeywords, (int)settings.directional.cascadeBlend - 1);
         buffer.SetGlobalVector(shadowAtlasSizeId, new Vector4(atlasSize, 1f/atlasSize));
+        
         buffer.EndSample(bufferName);
         ExecuteBuffer();
     }
 
+    //渲染单个平行光的ShadowMap
     //RenderShadow核心方法
     //ShadowMap的原理：从灯光的角度渲染场景，只保留深度信息。结果就是光线击中物体之前传播了多远。
-    //但是定向光为无限远，没有具体位置。因此要找出与灯光方向匹配的视图和投影矩阵，并提供一个裁剪空间立方体。
+    //但是定向光为无限远，没有具体位置。因此要找出与灯光方向匹配的viewMatrix和projectionMatrix，并提供一个裁剪空间立方体。
     //阴影投射使用的正交投影
     //加入Cascade级联
-    void RenderDirectionalShadows(int index, int split, int tileSize)
+    void RenderDirectionalShadows(int dirLightIndex, int split, int tileSize)
     {
-        ShadowedDirectionalLight light = shadowedDirectionLights[index];
+        ShadowedDirectionalLight light = shadowedDirectionLights[dirLightIndex];
         var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex);
 
         int cascadeCount = settings.directional.cascadeCount;
-        int tileOffset = index * cascadeCount;
+        int tileOffset = dirLightIndex * cascadeCount;
         Vector3 ratios = settings.directional.CascadeRatios;
 
         float cullingFactor = Mathf.Max(0f, 0.8f - settings.directional.cascadeFade);
@@ -156,17 +173,22 @@ public class Shadows
             );
             splitData.shadowCascadeBlendCullingFactor = cullingFactor;
             shadowSettings.splitData = splitData;
-            if(index == 0)
+            
+            if(dirLightIndex == 0)
             {
                 SetCaseData(i, splitData.cullingSphere, tileSize);
             }
 
             int tileIndex = tileOffset + i;
 
-            dirShadowMatrices[tileIndex] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix, SetTileViewport(tileIndex, split, tileSize), split);
+            Vector2 offset = SetTileViewport(tileIndex, split, tileSize);
+            //VP矩阵传给Shader，以便转换到灯光Clip空间，然后采样ShadowMap
+            dirShadowMatrices[tileIndex] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix, offset, split);
+            
             buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
             buffer.SetGlobalDepthBias(0f, light.slopeScaleBias);
             ExecuteBuffer();
+            //绘制
             context.DrawShadows(ref shadowSettings);
             buffer.SetGlobalDepthBias(0f, 0f);
         }
@@ -199,18 +221,33 @@ public class Shadows
         }
     }
 
-    Vector2 SetTileViewport(int index, int split, float tileSize)
+    /// <summary>
+    /// 设置ShadowMap的绘制偏移
+    /// </summary>
+    /// <param name="tileIndex">格子的Index</param>
+    /// <param name="split">划分数量，灯光数量和级联数量少的特殊情况下是1和2，正常是4</param>
+    /// <param name="tileSize">每个格子的像素尺寸</param>
+    /// <returns></returns>
+    Vector2 SetTileViewport(int tileIndex, int split, float tileSize)
     {
-        Vector2 offset = new Vector2(index % split, index / split);
+        Vector2 offset = new Vector2(tileIndex % split, tileIndex / split);
         buffer.SetViewport(new Rect(
             offset.x * tileSize, offset.y * tileSize, tileSize, tileSize
         ));
         return offset;
     }
 
+    /// <summary>
+    /// 因为划分了格子，对矩阵进行调整
+    /// </summary>
+    /// <param name="m"></param>
+    /// <param name="offset"></param>
+    /// <param name="split"></param>
+    /// <returns></returns>
     Matrix4x4 ConvertToAtlasMatrix(Matrix4x4 m, Vector2 offset, int split)
     {
         //判断Zbuffer 反向
+        //OpenGL之外的图形API都使用ReverseZ，以便提高近处的精度
         if (SystemInfo.usesReversedZBuffer)
         {
             m.m20 = -m.m20;
@@ -219,6 +256,8 @@ public class Shadows
             m.m23 = -m.m23;
         }
         float scale = 1f / split;
+        //从-1~1 转换到 0~1 缩放0.5再平移0.5
+        //只有x 和 y做ScaleOffset
         m.m00 = (0.5f * (m.m00 + m.m30) + offset.x * m.m30) * scale;
         m.m01 = (0.5f * (m.m01 + m.m31) + offset.x * m.m31) * scale;
         m.m02 = (0.5f * (m.m02 + m.m32) + offset.x * m.m32) * scale;

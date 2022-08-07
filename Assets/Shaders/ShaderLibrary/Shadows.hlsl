@@ -93,6 +93,7 @@ MyShadowData GetShadowData(Surface surfaceWS){
 	return data;
 }
 
+//采样ShadowMap
 float SampleDirectionalShadowAtlas(float3 positionSTS){
 	return SAMPLE_TEXTURE2D_SHADOW(
 		_DirectionalShadowAtlas, SHADOW_SAMPLER, positionSTS
@@ -128,6 +129,7 @@ float3 GetDirectionalShadowAttenuation(DirectionalShadowData directional, MyShad
 		return 1.0;
 	}
 	float3 normalBias = surfaceWS.normal * (directional.normalBias * _CascadeData[global.cascadeIndex].y);
+	//转换到ShadowMap贴图空间
 	float3 positionSTS = mul(
 		_DirectionalShadowMatrices[directional.tileIndex],
 		float4(surfaceWS.position + normalBias, 1.0)

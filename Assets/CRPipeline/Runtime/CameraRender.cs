@@ -51,23 +51,29 @@ public class CameraRenderer
         }
         commandBuffer.BeginSample(sampleName);
         ExecuteBuffer();
-        //设置灯光数据
+        //设置灯光数据、绘制ShadowMap
         lighting.Setup(context, cullingResults, shadowSetting);
         commandBuffer.EndSample(sampleName);
 
+        //摄像机渲染物体相关设置
         Setup();
 
+        //画可见几何体
         DrawVisableGeometry(useDynamicBatch, useGPUIInstance);
 
+        //画错误shader
         DrawUnsupportShaders();
 
+        //画Gizmos
         DrawGizmos();
 
+        //清理RT等资源
         lighting.CleanUp();
 
         Submit();
     }
 
+    
     void Setup()
     {
         //设置摄像机的MVP矩阵以及其他属性
@@ -195,7 +201,10 @@ public class CameraRenderer
     {
         if (camera.TryGetCullingParameters(out ScriptableCullingParameters p))
         {
+            //剔除参数
             p.shadowDistance = Mathf.Min(maxShadowDistance, camera.farClipPlane);
+            
+            //cullingResult是渲染对象集，通过ScriptableCullingParamters里的条件进行剔除对象
             cullingResults = context.Cull(ref p);
             return true;
         }
