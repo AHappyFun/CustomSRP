@@ -56,21 +56,23 @@ MyShadowData GetShadowData(Surface surfaceWS){
 	//最大距离之外无阴影,做渐变
 	data.strength = FadeShadowStrength(surfaceWS.depth, _ShadowDistanceFade.x, _ShadowDistanceFade.y);
 	int i = 0;
-	//计算出应该采样哪一级cascade
+	//计算出应该采样哪一级cascade，最后i就是级联层级
 	for(i = 0; i< _CascadeCount; i++){
 		float4 sphere = _CascadeCullingSpheres[i];
 		float distanceSqr = DistanceSquared(surfaceWS.position, sphere.xyz); 
-		if(distanceSqr < sphere.w){ //平方对比
+		//平方对比
+		if(distanceSqr < sphere.w){
 			float fade = FadeShadowStrength(
 				distanceSqr, _CascadeData[i].x, _ShadowDistanceFade.z
 			);
+			
 			if(i == _CascadeCount - 1)
 			{
-				data.strength *= fade;
+				data.strength *= fade;   //最大距离的
 			}
 			else
 			{
-				data.cascadeBlend = fade;
+				data.cascadeBlend = fade; //级联的Fade
 			}
 			break;
 		}
@@ -128,6 +130,7 @@ float3 GetDirectionalShadowAttenuation(DirectionalShadowData directional, MyShad
 	if(directional.strength <= 0.0){
 		return 1.0;
 	}
+	
 	float3 normalBias = surfaceWS.normal * (directional.normalBias * _CascadeData[global.cascadeIndex].y);
 	//转换到ShadowMap贴图空间
 	float3 positionSTS = mul(

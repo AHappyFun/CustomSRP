@@ -32,7 +32,7 @@ public class Shadows
     static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
     static int dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
     static int cascadeCountId = Shader.PropertyToID("_CascadeCount");
-    static int cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres"); 
+    static int cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres");  //CullingSphere xyz坐标 w半径
     //static int shadowDistanceId = Shader.PropertyToID("_ShadowDistance");
     static int cascadeDataId = Shader.PropertyToID("_CascadeData");
     static int shadowAtlasSizeId = Shader.PropertyToID("_ShadowAtlasSize");
@@ -68,6 +68,9 @@ public class Shadows
     int ShadowedDirectionLightCount;
     
     //灯光阴影Data
+    //x ShadowStrength
+    //y tileIndex
+    //z normalBias
     public Vector3 ReserveDirectionalShadows(Light light, int visableLightIndex)
     {
         //追踪投射阴影的灯光条件 1.数量没超限制 2.灯开了阴影 3.阴影强度不为0 4.GetShadowCasterBounds光源在场景里是否至少有一个ShadowCaster的物体
@@ -195,12 +198,19 @@ public class Shadows
 
     }
 
+    /// <summary>
+    /// 设置级联数据
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="cullingSphere"></param>
+    /// <param name="tileSize"></param>
     void SetCaseData(int index, Vector4 cullingSphere, float tileSize)
     {
         float texelSize = 2f * cullingSphere.w / tileSize;
         float filterSize = texelSize * ((float) settings.directional.filter + 1f);
         cullingSphere.w -= filterSize;
         cullingSphere.w *= cullingSphere.w;
+        
         cascadeCullingSpheres[index] = cullingSphere; //储存平方
         cascadeData[index] = new Vector4(1f / cullingSphere.w, filterSize* 1.4142136f);
   
