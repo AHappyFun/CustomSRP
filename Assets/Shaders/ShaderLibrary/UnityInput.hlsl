@@ -6,6 +6,9 @@ CBUFFER_START(UnityPerDraw)
 	float4x4 unity_WorldToObject;
 	float4 unity_LODFade;
 	real4 unity_WorldTransformParams;  //real不是有效类型，取决于平台的float或half
+
+	float4 unity_LightmapST;
+	float4 unity_DynamicLightmapST;
 CBUFFER_END
 
 CBUFFER_START(UnityPerFrame)

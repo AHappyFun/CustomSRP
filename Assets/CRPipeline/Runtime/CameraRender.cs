@@ -112,7 +112,8 @@ public class CameraRenderer
         DrawingSettings drawingSettings = new DrawingSettings(unlitShaderTagID, sortingSettings)
         {
             enableDynamicBatching = useDynamicBatch,
-            enableInstancing = useGPUIInstance
+            enableInstancing = useGPUIInstance,
+            perObjectData = PerObjectData.Lightmaps
         };
         drawingSettings.SetShaderPassName(1, litShaderTagID);
 

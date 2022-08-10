@@ -6,6 +6,7 @@
 #include "ShaderLibrary/Shadows.hlsl"
 #include "ShaderLibrary/Light.hlsl"
 #include "ShaderLibrary/BRDF.hlsl"
+#include "ShaderLibrary/GI.hlsl"
 #include "ShaderLibrary/Lighting.hlsl"
 
 TEXTURE2D(_BaseTexture);   //纹理和采样器不可以实例
@@ -23,6 +24,7 @@ struct Attributes{
 	float3 vertex: POSITION;
 	float3 normal: NORMAL;
 	float2 uv: TEXCOORD0;
+	GI_ATTRIBUTE_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -31,39 +33,46 @@ struct Varyings{
 	float3 worldNormal: VAR_NORMAL;
 	float3 worldPos :VAR_POSITION;
 	float2 uv : TEXCOORD0;
+	GI_VARYINGS_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 
 
-Varyings litVert(Attributes i){
-	Varyings o;
-	o.pos = TransformObjectToHClip(i.vertex.xyz);
+Varyings litVert(Attributes input){
+	Varyings output;
+	UNITY_SETUP_INSTANCE_ID(i);
+	UNITY_TRANSFER_INSTANCE_ID(i, output);
+    TRANSFER_GI_DATA(input,output);
+	
+	output.pos = TransformObjectToHClip(input.vertex.xyz);
 	//o.worldNormal = mul(UNITY_MATRIX_M, i.normal);  //不正确的写法
-	o.worldNormal = TransformObjectToWorldNormal(i.normal);  //正确的写法
-	o.worldPos = TransformObjectToWorld(i.vertex.xyz);
-	o.uv = i.uv;
-	return o;
+	output.worldNormal = TransformObjectToWorldNormal(input.normal);  //正确的写法
+	output.worldPos = TransformObjectToWorld(input.vertex.xyz);
+
+	float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseTexture_ST);
+	output.uv = input.uv * baseST.xy + baseST.zw;
+	return output;
 }
 
-half4 litFrag(Varyings v) :SV_TARGET
+half4 litFrag(Varyings input) :SV_TARGET
 {
 	  UNITY_SETUP_INSTANCE_ID(v);
-	  v.worldNormal = normalize(v.worldNormal);
+	  input.worldNormal = normalize(input.worldNormal);
 	  half3 albedo = UNITY_ACCESS_INSTANCED_PROP(PerInstance, _BaseColor).rgb;
-	  half4 baseTex = SAMPLE_TEXTURE2D(_BaseTexture, sampler_BaseTexture, v.uv);
+	  half4 baseTex = SAMPLE_TEXTURE2D(_BaseTexture, sampler_BaseTexture, input.uv);
 	
 
 	  Surface s;
-	  s.position = v.worldPos;
-	  s.normal = normalize(v.worldNormal);
-	  s.viewDir = normalize(_WorldSpaceCameraPos - v.worldPos);
-	  s.depth = -TransformWorldToView(v.worldPos).z; //摄像机空间-Z unity前方是-Z
+	  s.position = input.worldPos;
+	  s.normal = normalize(input.worldNormal);
+	  s.viewDir = normalize(_WorldSpaceCameraPos - input.worldPos);
+	  s.depth = -TransformWorldToView(input.worldPos).z; //摄像机空间-Z unity前方是-Z
 	  s.color = albedo * baseTex.rgb;
 	  s.alpha = baseTex.a;
 	  s.metallic = UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Metallic);
 	  s.smoothness = UNITY_ACCESS_INSTANCED_PROP(PerInstance, _Smoothness);
-	  s.dither = InterleavedGradientNoise(v.pos.xy, 0);
+	  s.dither = InterleavedGradientNoise(input.pos.xy, 0);
 
 	  //
 	  #if defined(_CLIPPING)
@@ -75,8 +84,10 @@ half4 litFrag(Varyings v) :SV_TARGET
 	  #else 
 		BRDF brdf = GetBRDF(s);
 	  #endif
-	  
-	  float3 color = GetLighting(s, brdf);
+
+	  GI gi = GetGI(GI_FRAGMENT_DATA(input));
+	
+	  float3 color = GetLighting(s, brdf, gi);
 
       return half4(color, s.alpha);
  }
