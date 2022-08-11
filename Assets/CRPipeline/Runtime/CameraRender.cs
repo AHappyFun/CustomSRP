@@ -113,7 +113,7 @@ public class CameraRenderer
         {
             enableDynamicBatching = useDynamicBatch,
             enableInstancing = useGPUIInstance,
-            perObjectData = PerObjectData.Lightmaps
+            perObjectData = PerObjectData.Lightmaps | PerObjectData.LightProbe
         };
         drawingSettings.SetShaderPassName(1, litShaderTagID);
 
