@@ -2,10 +2,16 @@
 {
     Properties
     {
+    	//for lightmap
+    	[HideInInspector] _MainTex("Texture for Lightmap", 2D) = "white" {}
+		[HideInInspector] _Color("Color for Lightmap", Color) = (0.5, 0.5, 0.5, 1.0)
+    	
 		_BaseColor("BaseColor", color) = (0.5,0.5,0.5,1)
 		_BaseTexture("Base Texture", 2D) = "white"{}
 		_Metallic("Metallic", range(0,1)) = 0
 		_Smoothness("Smoothness",Range(0,1)) = 0.5
+    	[NoScaleOffset]_EmissionTex("EmissionTex", 2D) = "white" {}
+    	[HDR]_EmissionColor("EmissionColor", color) = (0,0,0,0)
 		_AlphaCutoff("Alpha CutOff", Range(0,1)) = 0
 
 		[Toggle(_CLIPPING)] _Clipping("AlphaTest", float) = 0
@@ -23,6 +29,10 @@
 				   "RenderPipline" = "UniversalRenderPipeline"
 		}
 
+    	HLSLINCLUDE
+    	#include "ShaderLibrary/Common.hlsl"
+		#include "ShaderLibrary/LitInput.hlsl"
+    	ENDHLSL
 
         Pass
         {
@@ -46,7 +56,6 @@
 
 			//需要处理Loop GLES3.0 
 			#pragma target 3.5
-			//#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/core.hlsl"
 			#include "ShaderLibrary/LitPass.hlsl"
 
 			#pragma vertex litVert
@@ -65,13 +74,29 @@
 			HLSLPROGRAM
 			#pragma target 3.5
 			#pragma multi_compile_instancing
-			//#pragma shader_feature _CLIPPING
 			#pragma shader_feature _ _SHADOWS_CLIP _SHADOWS_DITHER
 			#pragma vertex ShadowCasterPassVertex
 			#pragma fragment ShadowCasterPassFragment
 			#include "ShaderLibrary/ShadowCasterPass.hlsl" 
 			ENDHLSL
 		}
+    	
+	    Pass
+    	{
+    		Tags{
+    			"LightMode" = "Meta"
+            }
+    		Cull Off
+    		
+    		HLSLPROGRAM
+
+    		#pragma target 3.5
+    		#pragma vertex MetaPassVert
+    		#pragma fragment MetaPassFrag
+    		#include "ShaderLibrary/MetaPass.hlsl"
+    		
+    		ENDHLSL
+    	}
     }
 
 	CustomEditor "CustomShaderGUI"

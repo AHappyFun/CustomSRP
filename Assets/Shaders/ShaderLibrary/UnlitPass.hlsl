@@ -2,17 +2,6 @@
 #ifndef CUSTOM_UNLIT_PASS_INCLUDE
 #define CUSTOM_UNLIT_PASS_INCLUDE
 
-#include "ShaderLibrary/Common.hlsl"
-
-TEXTURE2D(_BaseTexture);   //纹理和采样器不可以实例
-SAMPLER(sampler_BaseTexture);
-
-UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
-	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
-	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseTexture_ST)
-	UNITY_DEFINE_INSTANCED_PROP(float, _AlphaCutoff)
-UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
-
 
 struct Attributes {
 	float3 positionOS : POSITION;
@@ -34,8 +23,7 @@ Varyings unlitVert(Attributes input){
 	float3 worldPos = TransformObjectToWorld(input.positionOS);
 	output.positionCS = TransformWorldToHClip(worldPos);
 
-	float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseTexture_ST);
-	output.uv0 = input.uv0 * baseST.xy + baseST.zw;
+	output.uv0 = TransformBaseUV(input.uv0);
 
 	return output;
 }
@@ -43,11 +31,10 @@ Varyings unlitVert(Attributes input){
 half4 unlitFrag(Varyings input) :SV_TARGET
 {
 	 UNITY_SETUP_INSTANCE_ID(input);
-	 half4 baseTex = SAMPLE_TEXTURE2D(_BaseTexture, sampler_BaseTexture, input.uv0);
-	 half4 baseColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
-	 half4 finalColor = baseTex * baseColor;
+
+	 half4 finalColor = GetBase(input.uv0);
 #if defined(_CLIPPING)
-	 clip(baseTex.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlphaCutoff));
+	 clip(finalColor.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlphaCutoff));
 #endif
 
 	 return finalColor ;

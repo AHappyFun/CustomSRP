@@ -20,11 +20,30 @@ public class CustomShaderGUI : ShaderGUI
         materials = materialEditor.targets;
         this.properties = properties;
 
+        BakeEmission();
+        
         PresetGUI();
 
         if (EditorGUI.EndChangeCheck())
         {
             SetShadowCasterPass();
+            CopyLightMappingProperties();
+        }
+    }
+
+    /// <summary>
+    /// 烘焙自发光
+    /// </summary>
+    void BakeEmission()
+    {
+        EditorGUI.BeginChangeCheck();
+        editor.LightmapEmissionProperty();
+        if (EditorGUI.EndChangeCheck())
+        {
+            foreach (Material m in editor.targets)
+            {
+                m.globalIlluminationFlags &= ~MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+            }
         }
     }
 
@@ -244,5 +263,22 @@ public class CustomShaderGUI : ShaderGUI
             material.SetShaderPassEnabled("ShadowCaster", enabled);
         }
     }
+
+    void CopyLightMappingProperties()
+    {
+        MaterialProperty mainTex = FindProperty("_MainTex", properties, false);
+        MaterialProperty baseTex = FindProperty("_BaseTexture", properties, false);
+        if (mainTex != null && baseTex != null) {
+            mainTex.textureValue = baseTex.textureValue;
+            mainTex.textureScaleAndOffset = baseTex.textureScaleAndOffset;
+        }
+        MaterialProperty color = FindProperty("_Color", properties, false);
+        MaterialProperty baseColor = FindProperty("_BaseColor", properties, false);
+        if (color != null && baseColor != null) {
+            color.colorValue = baseColor.colorValue;
+        }
+    }
+    
+    
     #endregion
 }

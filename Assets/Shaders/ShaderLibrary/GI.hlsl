@@ -3,8 +3,13 @@
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/EntityLighting.hlsl"
 
+//LightMap
 TEXTURE2D(unity_Lightmap);
 SAMPLER(samplerunity_Lightmap);
+
+//LightProbeVolume
+TEXTURE3D_FLOAT(unity_ProbeVolumeSH);
+SAMPLER(samplerunity_ProbeVolumeSH);
 
 #if defined(LIGHTMAP_ON)
     #define GI_ATTRIBUTE_DATA float2 lightMapUV : TEXCOORD1;
@@ -44,15 +49,29 @@ float3 SampleLightProbe(Surface surfaceWS)
     #if defined(LIGHTMAP_ON)
         return 0.0;
     #else
-        float4 params[7];
-        params[0] = unity_SHAr;
-        params[1] = unity_SHAg;
-        params[2] = unity_SHAb;
-        params[3] = unity_SHBr;
-        params[4] = unity_SHBg;
-        params[5] = unity_SHBb;
-        params[6] = unity_SHC;
-        return max(0.0, SampleSH9(params, surfaceWS.normal));
+        if(unity_ProbeVolumeParams.x)
+        {
+            return SampleProbeVolumeSH4(
+                TEXTURE3D_ARGS(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH),
+                surfaceWS.position, surfaceWS.normal,
+                unity_ProbeVolumeWorldToObject,
+                unity_ProbeVolumeParams.y, unity_ProbeVolumeParams.z,
+                unity_ProbeVolumeParams.xyz, unity_ProbeVolumeSizeInv.xyz             
+            );
+        }
+        else
+        {    
+            float4 params[7];
+            params[0] = unity_SHAr;
+            params[1] = unity_SHAg;
+            params[2] = unity_SHAb;
+            params[3] = unity_SHBr;
+            params[4] = unity_SHBg;
+            params[5] = unity_SHBb;
+            params[6] = unity_SHC;
+            return max(0.0, SampleSH9(params, surfaceWS.normal));
+        }
+        
     #endif
 }
 

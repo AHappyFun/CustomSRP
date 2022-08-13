@@ -2,7 +2,7 @@
 {
     Properties
     {
-		_BaseColor("BaseColor", color) = (1,1,1,1)
+		[HDR]_BaseColor("BaseColor", color) = (1,1,1,1)
 		_BaseTexture("Base Texture", 2D) = "white"{}
 		_AlphaCutoff("Alpha CutOff", Range(0,1)) = 0
 
@@ -17,6 +17,11 @@
     {
         Tags { "RenderType"="Opaque" "RenderPipline" = "UniversalRenderPipeline"}
 
+        HLSLINCLUDE
+    		#include "ShaderLibrary/Common.hlsl"
+			#include "ShaderLibrary/UnLitInput.hlsl"
+    	ENDHLSL
+    	
         Pass
         {
 			Blend [_SrcBlend] [_DstBlend]
@@ -25,9 +30,7 @@
 
 			HLSLPROGRAM
 			
-			#pragma shader_feature _CLIPPING
-
-			
+			#pragma shader_feature _CLIPPING	
 			#include "ShaderLibrary/UnlitPass.hlsl"
 
 			#pragma multi_compile_instancing
@@ -54,6 +57,23 @@
 			#include "ShaderLibrary/ShadowCasterPass.hlsl" 
 			ENDHLSL
 		}
+    	
+    	Pass
+    	{
+    		Tags{
+    			"LightMode" = "Meta"
+            }
+    		Cull Off
+    		
+    		HLSLPROGRAM
+
+    		#pragma target 3.5
+    		#pragma vertex MetaPassVert
+    		#pragma fragment MetaPassFrag
+    		#include "ShaderLibrary/MetaPass.hlsl"
+    		
+    		ENDHLSL
+    	}
     }
 
 	CustomEditor "CustomShaderGUI"
