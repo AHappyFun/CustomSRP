@@ -25,7 +25,7 @@ SAMPLER(samplerunity_ProbeVolumeSH);
     #define GI_FRAGMENT_DATA(input) 0.0
 #endif
 
-
+//采样LightMap
 float3 SampleLightMap(float2 lightMapUV)
 {
     #if defined(LIGHTMAP_ON)
@@ -44,6 +44,7 @@ float3 SampleLightMap(float2 lightMapUV)
     #endif
 }
 
+//采样LightProbe
 float3 SampleLightProbe(Surface surfaceWS)
 {
     #if defined(LIGHTMAP_ON)

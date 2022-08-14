@@ -7,17 +7,22 @@ CBUFFER_START(UnityPerDraw)
 	float4 unity_LODFade;
 	real4 unity_WorldTransformParams;  //real不是有效类型，取决于平台的float或half
 
+	//lightmap缩放
 	float4 unity_LightmapST;
 	float4 unity_DynamicLightmapST;
 
-	float4 unity_SHAr;
+	//球谐参数 SH9需要的7个float4
+	//0和1阶
+	float4 unity_SHAr; 
 	float4 unity_SHAg;
 	float4 unity_SHAb;
+	//2阶
 	float4 unity_SHBr;
 	float4 unity_SHBg;
 	float4 unity_SHBb;
 	float4 unity_SHC;
 
+	//LPPV参数
 	float4 unity_ProbeVolumeParams;
 	float4x4 unity_ProbeVolumeWorldToObject;
 	float4 unity_ProbeVolumeSizeInv;
