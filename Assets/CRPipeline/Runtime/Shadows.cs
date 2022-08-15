@@ -56,12 +56,20 @@ public class Shadows
         "_CASCADE_BLEND_DITHER"
     };
 
+    private static string[] shadowMaskKeywords =
+    {
+        "_SHADOW_MASK_DISTANCE"
+    };
+
+    private bool useShadowMask;
+
     public void Setup(ScriptableRenderContext context, CullingResults cullingResults, ShadowSetting settings)
     {
         this.context = context;
         this.cullingResults = cullingResults;
         this.settings = settings;
         ShadowedDirectionLightCount = 0;
+        this.useShadowMask = false;
     }
 
     //记录当前平行光数量
@@ -79,6 +87,13 @@ public class Shadows
            && light.shadowStrength > 0f 
            && cullingResults.GetShadowCasterBounds(visableLightIndex, out Bounds b))
         {
+            LightBakingOutput lightBaking = light.bakingOutput;
+            if (lightBaking.lightmapBakeType == LightmapBakeType.Mixed &&
+                lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask)
+            {
+                useShadowMask = true;
+            }
+            
             shadowedDirectionLights[ShadowedDirectionLightCount] = new ShadowedDirectionalLight {
                 visibleLightIndex = visableLightIndex,
                 slopeScaleBias = light.shadowBias,
@@ -110,6 +125,10 @@ public class Shadows
             //默认ShadowMap
             buffer.GetTemporaryRT(dirShadowAtlasId, 1, 1, 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
         }
+        buffer.BeginSample(bufferName);
+        SetKeywords(shadowMaskKeywords, useShadowMask ? 0 : -1);
+        buffer.EndSample(bufferName);
+        ExecuteBuffer();
     }
 
     //渲染平行光的ShadowMap，多灯光就要进行分块
