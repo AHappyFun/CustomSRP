@@ -58,6 +58,7 @@ public class Shadows
 
     private static string[] shadowMaskKeywords =
     {
+        "_SHADOW_MASK_ALWAYS",
         "_SHADOW_MASK_DISTANCE"
     };
 
@@ -79,33 +80,43 @@ public class Shadows
     //x ShadowStrength
     //y tileIndex
     //z normalBias
-    public Vector3 ReserveDirectionalShadows(Light light, int visableLightIndex)
+    //w maskChannel
+    public Vector4 ReserveDirectionalShadows(Light light, int visableLightIndex)
     {
-        //追踪投射阴影的灯光条件 1.数量没超限制 2.灯开了阴影 3.阴影强度不为0 4.GetShadowCasterBounds光源在场景里是否至少有一个ShadowCaster的物体
+        //追踪投射阴影的灯光条件 1.数量没超限制 2.灯开了阴影 3.阴影强度不为0 
         if(ShadowedDirectionLightCount < maxShadowdDirectionalLightCount 
            && light.shadows != LightShadows.None 
-           && light.shadowStrength > 0f 
-           && cullingResults.GetShadowCasterBounds(visableLightIndex, out Bounds b))
+           && light.shadowStrength > 0f)
         {
+            float maskChannel = -1;
             LightBakingOutput lightBaking = light.bakingOutput;
             if (lightBaking.lightmapBakeType == LightmapBakeType.Mixed &&
                 lightBaking.mixedLightingMode == MixedLightingMode.Shadowmask)
             {
                 useShadowMask = true;
+                maskChannel = lightBaking.occlusionMaskChannel;
             }
+            
+            //GetShadowCasterBounds光源在场景里是否至少有一个ShadowCaster的物体
+            if (!cullingResults.GetShadowCasterBounds(visableLightIndex, out Bounds b))
+            {
+                return new Vector4(-light.shadowStrength, 0f, 0f, maskChannel);
+            }
+            
             
             shadowedDirectionLights[ShadowedDirectionLightCount] = new ShadowedDirectionalLight {
                 visibleLightIndex = visableLightIndex,
                 slopeScaleBias = light.shadowBias,
                 nearPlaneOffset =  light.shadowNearPlane
             };
-            return new Vector3(
+            return new Vector4(
                 light.shadowStrength, 
                 settings.directional.cascadeCount * ShadowedDirectionLightCount++,
-                light.shadowNormalBias
+                light.shadowNormalBias,
+                maskChannel
             );
         }
-        return Vector3.zero;
+        return new Vector4(0f ,0f ,0f ,-1f);
     }
 
     void ExecuteBuffer()
@@ -126,7 +137,7 @@ public class Shadows
             buffer.GetTemporaryRT(dirShadowAtlasId, 1, 1, 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
         }
         buffer.BeginSample(bufferName);
-        SetKeywords(shadowMaskKeywords, useShadowMask ? 0 : -1);
+        SetKeywords(shadowMaskKeywords, useShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
         buffer.EndSample(bufferName);
         ExecuteBuffer();
     }
