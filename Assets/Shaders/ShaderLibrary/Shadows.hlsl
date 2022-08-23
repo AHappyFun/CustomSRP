@@ -174,21 +174,21 @@ float GetBakedShadow(ShadowMask mask, int channel, float strength)
 	return 1.0;
 }
 
-float MixBakedAndRealtimeShadows(MyShadowData global, float shadow, int shadowMaskChannel, float strength)
+float MixBakedAndRealtimeShadows(MyShadowData global, float realTimeShadow, int shadowMaskChannel, float strength)
 {
-	float baked = GetBakedShadow(global.shadowMask, shadowMaskChannel);
+	float bakedShadow = GetBakedShadow(global.shadowMask, shadowMaskChannel);
 	if(global.shadowMask.always)
 	{
-		shadow = lerp(1.0, shadow, global.strength);
-		shadow = min(baked, shadow);
-		return lerp(1.0, shadow, strength);
+		realTimeShadow = lerp(1.0, realTimeShadow, global.strength);
+		realTimeShadow = min(bakedShadow, realTimeShadow);
+		return lerp(1.0, realTimeShadow, strength);
 	}
 	if(global.shadowMask.distance)
 	{
-		shadow = lerp(baked, shadow, global.strength);
-		return lerp(1.0, shadow, strength);
+		realTimeShadow = lerp(bakedShadow, realTimeShadow, global.strength);
+		return lerp(1.0, realTimeShadow, strength);
 	}
-	return lerp(1.0, shadow, strength * global.strength);
+	return lerp(1.0, realTimeShadow, strength * global.strength);
 }
 
 float3 GetDirectionalShadowAttenuation(DirectionalShadowData directional, MyShadowData global, Surface surfaceWS){

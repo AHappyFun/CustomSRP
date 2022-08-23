@@ -45,6 +45,9 @@ Varyings litVert(Attributes input){
 half4 litFrag(Varyings input) :SV_TARGET
 {
 	  UNITY_SETUP_INSTANCE_ID(input);
+
+	  ClipLOD(input.pos.xy, unity_LODFade.x);
+	
 	  input.worldNormal = normalize(input.worldNormal);
 	
 	  float4 base = GetBase(input.uv);
