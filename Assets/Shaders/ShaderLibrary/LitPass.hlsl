@@ -61,6 +61,7 @@ half4 litFrag(Varyings input) :SV_TARGET
 	  surf.alpha = base.a;
 	  surf.metallic = GetMetallic();
 	  surf.smoothness = GetSmoothness();
+	  surf.fresnelStrength = GetFresnel();
 	  surf.dither = InterleavedGradientNoise(input.pos.xy, 0);
 
 	  //
@@ -74,7 +75,7 @@ half4 litFrag(Varyings input) :SV_TARGET
 		BRDF brdf = GetBRDF(surf);
 	  #endif
 
-	  GI gi = GetGI(GI_FRAGMENT_DATA(input), surf);
+	  GI gi = GetGI(GI_FRAGMENT_DATA(input), surf, brdf);
 	
 	  float3 color = GetLighting(surf, brdf, gi);
 

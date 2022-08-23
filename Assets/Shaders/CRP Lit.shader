@@ -10,6 +10,7 @@
 		_BaseTexture("Base Texture", 2D) = "white"{}
 		_Metallic("Metallic", range(0,1)) = 0
 		_Smoothness("Smoothness",Range(0,1)) = 0.5
+    	_Fresnel("Fresnel", Range(0,1)) = 1
     	[NoScaleOffset]_EmissionTex("EmissionTex", 2D) = "white" {}
     	[HDR]_EmissionColor("EmissionColor", color) = (0,0,0,0)
 		_AlphaCutoff("Alpha CutOff", Range(0,1)) = 0

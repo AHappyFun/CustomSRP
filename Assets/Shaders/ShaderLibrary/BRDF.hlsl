@@ -10,6 +10,8 @@ struct BRDF{
 	float3 diffuse;
 	float3 specular;
 	float roughness;
+	float perceptualRoughness;
+	float fresnel;
 };
 
 #define MIN_REFLECT 0.04
@@ -45,11 +47,25 @@ BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false){
 	brdf.specular = lerp(MIN_REFLECT, surface.color, surface.metallic); //随着金属度也差不多
 
 	//roughness = 1 - smoothness 
-	float perceptualRoughness  = PerceptualSmoothnessToPerceptualRoughness(surface.smoothness);
+	brdf.perceptualRoughness  = PerceptualSmoothnessToPerceptualRoughness(surface.smoothness);
 	//平方
-	brdf.roughness = PerceptualRoughnessToRoughness(perceptualRoughness);
+	brdf.roughness = PerceptualRoughnessToRoughness(brdf.perceptualRoughness);
+
+	brdf.fresnel = saturate(surface.smoothness + 1.0 - oneMinusReflect);
 
 	return brdf;
 };
+
+//间接光BRDF
+float3 IndirectBRDF(Surface surface, BRDF brdf, float3 diffuse, float3 specular)
+{
+
+	float fresnelStrength = surface.fresnelStrength * Pow4(1.0 - saturate(dot(surface.normal, surface.viewDir)));
+	
+	float3 reflection = specular * lerp(brdf.specular, brdf.fresnel, fresnelStrength);
+	reflection /= brdf.roughness * brdf.roughness + 1.0;
+	
+	return diffuse * brdf.diffuse + reflection;
+}
 
 #endif
