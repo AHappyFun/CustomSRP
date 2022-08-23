@@ -29,8 +29,8 @@ struct Varyings{
 
 Varyings litVert(Attributes input){
 	Varyings output;
-	UNITY_SETUP_INSTANCE_ID(i);
-	UNITY_TRANSFER_INSTANCE_ID(i, output);
+	UNITY_SETUP_INSTANCE_ID(input);
+	UNITY_TRANSFER_INSTANCE_ID(input, output);
     TRANSFER_GI_DATA(input,output);
 	
 	output.pos = TransformObjectToHClip(input.vertex.xyz);
@@ -44,7 +44,7 @@ Varyings litVert(Attributes input){
 
 half4 litFrag(Varyings input) :SV_TARGET
 {
-	  UNITY_SETUP_INSTANCE_ID(v);
+	  UNITY_SETUP_INSTANCE_ID(input);
 	  input.worldNormal = normalize(input.worldNormal);
 	
 	  float4 base = GetBase(input.uv);
