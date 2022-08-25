@@ -32,6 +32,8 @@ half4 unlitFrag(Varyings input) :SV_TARGET
 {
 	 UNITY_SETUP_INSTANCE_ID(input);
 
+	 ClipLOD(input.positionCS.xy, unity_LODFade.x);
+
 	 half4 finalColor = GetBase(input.uv0);
 #if defined(_CLIPPING)
 	 clip(finalColor.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlphaCutoff));

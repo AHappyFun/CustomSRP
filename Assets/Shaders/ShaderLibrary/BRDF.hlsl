@@ -60,12 +60,17 @@ BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false){
 float3 IndirectBRDF(Surface surface, BRDF brdf, float3 diffuse, float3 specular)
 {
 
+	float3 indirectDiffuse = diffuse * brdf.diffuse;
+
+	//fresnel反射
 	float fresnelStrength = surface.fresnelStrength * Pow4(1.0 - saturate(dot(surface.normal, surface.viewDir)));
 	
-	float3 reflection = specular * lerp(brdf.specular, brdf.fresnel, fresnelStrength);
-	reflection /= brdf.roughness * brdf.roughness + 1.0;
+	float3 indirectSpecular = specular * lerp(brdf.specular, brdf.fresnel, fresnelStrength);
+
+	//受到粗糙度影响
+	indirectSpecular /= brdf.roughness * brdf.roughness + 1.0;
 	
-	return diffuse * brdf.diffuse + reflection;
+	return indirectDiffuse + indirectSpecular;
 }
 
 #endif

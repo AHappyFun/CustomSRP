@@ -113,6 +113,8 @@ float3 SampleEnvironment(Surface surfaceWS, BRDF brdf)
     float3 uvw = reflect(-surfaceWS.viewDir, surfaceWS.normal);
     float mip = PerceptualRoughnessToMipmapLevel(brdf.perceptualRoughness);
     float4 env = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, uvw, mip);
+    
+    //HDR¥¶¿Ì
     return DecodeHDREnvironment(env, unity_SpecCube0_HDR);
 }
 
