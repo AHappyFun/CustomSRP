@@ -20,11 +20,15 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseTexture:
-        m_Texture: {fileID: 2800000, guid: 960dfae78b618414fb66746f8fd246db, type: 3}
+        m_Texture: {fileID: 2800000, guid: a765eb821a5a1ff418953abf48de0e81, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionTex:
-        m_Texture: {fileID: 2800000, guid: 724ff5e29be368244bd1da8046e35a8d, type: 3}
+        m_Texture: {fileID: 2800000, guid: c50a945270f045a48962e51d6ddee8e0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: a765eb821a5a1ff418953abf48de0e81, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
@@ -32,6 +36,7 @@ Material:
     - _AlphaCutoff: 0
     - _Clipping: 0
     - _DstBlend: 0
+    - _Fresnel: 1
     - _Metallic: 1
     - _PremulAlpha: 0
     - _ReceiveShadows: 1
@@ -41,4 +46,5 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 3.8567448, g: 3.7979453, b: 0, a: 1}

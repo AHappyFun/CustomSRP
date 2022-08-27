@@ -70,7 +70,7 @@ float3 IndirectBRDF(Surface surface, BRDF brdf, float3 diffuse, float3 specular)
 	//受到粗糙度影响
 	indirectSpecular /= brdf.roughness * brdf.roughness + 1.0;
 	
-	return indirectDiffuse + indirectSpecular;
+	return (indirectDiffuse + indirectSpecular) * surface.occlusion;
 }
 
 #endif

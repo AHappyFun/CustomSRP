@@ -8,11 +8,30 @@
     	
 		_BaseColor("BaseColor", color) = (0.5,0.5,0.5,1)
 		_BaseTexture("Base Texture", 2D) = "white"{}
+    	
+    	[Toggle(_MASK_MAP)]_MaskMapToggle("Use Mask", float) = 0
+    	[NoScaleOffset]_MaskTexture("Mask (MettialiicR OcclusionG DetailB SmoothnessA)", 2D) = "white" {}
 		_Metallic("Metallic", range(0,1)) = 0
 		_Smoothness("Smoothness",Range(0,1)) = 0.5
+    	_Occlusion("Occlusion", Range(0,1)) = 1
     	_Fresnel("Fresnel", Range(0,1)) = 1
+    	
+    	//base Normal
+    	[Toggle(_NORMAL_MAP)]_NormalMapToggle("NormalMap Open", float) = 0
+    	[NoScaleOffset]_NormalMap("NormalMap", 2D) = "bump" {}
+    	_NormalScale("Normal Strength", Range(0,1)) = 1
+        //Detail albedo and normal
+    	[Toggle(_DETAIL_MAP)]_DetailToggle("Detail Open", float) = 0
+    	_DetailTexture("Details(R:DetailAlbedo B:DetailSmoothness)", 2D) = "linearGrey" {}
+    	_DetailNormalMap("Detail Normal", 2D) = "bump" {}
+    	_DetailAlbedo("Detail Albedo", Range(0,1)) = 1
+    	_DetailSmothness("Detail Smoothness", Range(0,1)) = 1
+    	_DetailNormalScale("DetailNormal Strength", Range(0,1)) = 1
+    	
+    	//emission
     	[NoScaleOffset]_EmissionTex("EmissionTex", 2D) = "white" {}
     	[HDR]_EmissionColor("EmissionColor", color) = (0,0,0,0)
+    	
 		_AlphaCutoff("Alpha CutOff", Range(0,1)) = 0
 
 		[Toggle(_CLIPPING)] _Clipping("AlphaTest", float) = 0
@@ -50,6 +69,9 @@
 			#pragma shader_feature _CLIPPING
 			#pragma shader_feature _RECEIVE_SHADOWS
 			#pragma shader_feature _PREMULTIPY_ALPHA
+			#pragma shader_feature _NORMAL_MAP
+			#pragma shader_feature _MASK_MAP
+			#pragma shader_feature _DETAIL_MAP
 
 			#pragma multi_compile __ LOD_FADE_CROSSFADE		
 			#pragma multi_compile _ LIGHTMAP_ON

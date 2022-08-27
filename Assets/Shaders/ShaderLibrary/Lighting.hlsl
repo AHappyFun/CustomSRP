@@ -13,9 +13,7 @@ float3 GetLighting(Surface surface, Light light, BRDF brdf){
 float3 GetLighting(Surface surfaceWS, BRDF brdf, GI gi){
 	MyShadowData shadowData = GetShadowData(surfaceWS);
 	shadowData.shadowMask = gi.shadowMask;
-	//return gi.shadowMask.shadows.rgb;
 	
-	//float3 indirect = gi.diffuse * brdf.diffuse;
 	float3 indirect = IndirectBRDF(surfaceWS, brdf, gi.diffuse, gi.specular);
 	float3 direct = 0;
 	

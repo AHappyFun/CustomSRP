@@ -2,7 +2,9 @@
 #define CUSTOM_COMMON_INCLUDE
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/common.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
 #include "UnityInput.hlsl"
+
 
 //float3 TransformObjectToWorld(float3 objPos) {
 //	return mul(unity_ObjectToWorld, float4(objPos, 1.0)).xyz;
@@ -40,6 +42,49 @@ void ClipLOD(float2 positionCS, float fade)
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
+
+float3 DecodeNormal(float4 sample, float scale)
+{
+	#if defined(UNITY_NO_DXT5nm)
+		return UnpackNormalRGB(sample, scale);
+	#else
+		return UnpackNormalmapRGorAG(sample, scale);
+	#endif
+
+}
+
+float3 NormalTangentToWorld(float3 normalTS, float3 normalWS, float4 tangentWS)
+{
+	float3x3 tangentToWorldMatrix = CreateTangentToWorld(normalWS, tangentWS.xyz, tangentWS.w);
+	return mul(normalTS, tangentToWorldMatrix);
+}
+
+struct InputConfig
+{
+	float2 baseUV;
+	float2 detailUV;
+	bool useMask;
+	bool useDetail;
+};
+
+InputConfig GetInputConfig(float2 baseUV, float2 detailUV = 0.0)
+{
+	InputConfig c;
+	c.baseUV = baseUV;
+	c.detailUV = detailUV;
+	c.useMask = false;
+	c.useDetail = false;
+#if defined(_MASK_MAP)
+	c.useMask = true;
+#endif
+
+#if defined(_DETAIL_MAP)
+	c.useDetail = true;
+#endif
+	
+	return c;
+}
 
 
 #endif

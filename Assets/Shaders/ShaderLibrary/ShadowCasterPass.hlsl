@@ -11,6 +11,7 @@ struct Attributes {
 struct Varyings {
 	float4 positionCS : SV_POSITION;
 	float2 uv0 : VAR_BASE_UV;
+	float2 detailUV : VAR_DETAIL_UV;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -38,8 +39,9 @@ void ShadowCasterPassFragment(Varyings input)
 	UNITY_SETUP_INSTANCE_ID(input);
 	
 	ClipLOD(input.positionCS.xy, unity_LODFade.x);
-	
-	half4 base = GetBase(input.uv0);
+
+	InputConfig cfg = GetInputConfig(input.uv0, 0.0);
+	half4 base = GetBase(cfg);
 
 #if defined(_SHADOWS_CLIP)
 	clip(base.a - GetCutOff());

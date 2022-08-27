@@ -7,9 +7,9 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: CustomRP_CRP Lit 4
+  m_Name: CustomRP_CRP Lit 7
   m_Shader: {fileID: 4800000, guid: bf3f65dd57dd8994cbba1a6c42853500, type: 3}
-  m_ShaderKeywords: 
+  m_ShaderKeywords: _DETAIL_MAP _MASK_MAP _NORMAL_MAP
   m_LightmapFlags: 0
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -20,15 +20,23 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseTexture:
-        m_Texture: {fileID: 2800000, guid: a765eb821a5a1ff418953abf48de0e81, type: 3}
+        m_Texture: {fileID: 2800000, guid: 76c080d8deca2864aa9af627ec4e9bd0, type: 3}
         m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 2800000, guid: 4ed31b54ceb59ca40a3fd974ffecb21e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailTexture:
+        m_Texture: {fileID: 2800000, guid: 58a983acea5bcc24ea66e9a2e16d8614, type: 3}
+        m_Scale: {x: 8, y: 4}
         m_Offset: {x: 0, y: 0}
     - _EmissionTex:
         m_Texture: {fileID: 2800000, guid: c50a945270f045a48962e51d6ddee8e0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: a765eb821a5a1ff418953abf48de0e81, type: 3}
+        m_Texture: {fileID: 2800000, guid: 76c080d8deca2864aa9af627ec4e9bd0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MaskMap:
@@ -36,16 +44,28 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MaskTexture:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 7024353828f52bb41bd9155a7504ea1f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 2800000, guid: daf708b817207de4792c033a4f50b992, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _: 0
     - _AlphaCutoff: 0
     - _Clipping: 0
+    - _DetailAlbedo: 0.2
+    - _DetailNormalScale: 0.378
+    - _DetailSmothness: 1
+    - _DetailToggle: 1
     - _DstBlend: 0
     - _Fresnel: 1
-    - _Metallic: 0.828
+    - _MaskMapToggle: 1
+    - _Metallic: 1
+    - _NormalMapToggle: 1
+    - _NormalScale: 1
+    - _Occlusion: 1
     - _PremulAlpha: 0
     - _ReceiveShadows: 1
     - _Shadows: 0
@@ -53,6 +73,6 @@ Material:
     - _SrcBlend: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0.08571011, g: 0.9528302, b: 0, a: 1}
+    - _BaseColor: {r: 0.6839622, g: 0.80650747, b: 1, a: 1}
+    - _Color: {r: 0.68396217, g: 0.80650747, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0.9502232, b: 1, a: 1}
