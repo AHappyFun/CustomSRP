@@ -22,6 +22,19 @@ float3 GetLighting(Surface surfaceWS, BRDF brdf, GI gi){
 		direct += GetLighting(surfaceWS, light, brdf);
 	}
 	
+#if defined(_LIGHTS_PER_OBJECT)
+	for(int j = 0; j < min(unity_LightData.y, 8); j++){
+		int lightIndex = unity_LightIndices[(uint)j / 4][(uint)j % 4];		
+		Light light = GetOtherLight(lightIndex, surfaceWS, shadowData);
+		direct += GetLighting(surfaceWS, light, brdf);
+	}
+#else
+	for(int j = 0; j < GetOtherLightCount(); j++){
+		Light light = GetOtherLight(j, surfaceWS, shadowData);
+		direct += GetLighting(surfaceWS, light, brdf);
+	}
+#endif
+
 	return indirect + direct;
 }
 

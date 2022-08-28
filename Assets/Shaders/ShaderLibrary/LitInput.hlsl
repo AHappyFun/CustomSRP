@@ -69,8 +69,11 @@ float4 GetBase(InputConfig cfg)
     
     if(cfg.useDetail)
     {
+        //-1 1
         float detail = GetDetail(cfg).r * INPUT_PROP(_DetailAlbedo);
         float detailMask = GetMask(cfg).b;
+
+        //近似Gamma空间，线性空间直接算会很亮
         baseTex.rgb = lerp(sqrt(baseTex.rgb), detail < 0.0 ? 0.0 : 1.0, abs(detail) * detailMask);
         baseTex.rgb *= baseTex.rgb;
     }

@@ -33,7 +33,7 @@ public class CameraRenderer
 #endif
     private CommandBuffer commandBuffer = new CommandBuffer { name = bufferName };
 
-    public void Render(ScriptableRenderContext ctx, Camera cam, bool useDynamicBatch, bool useGPUIInstance, ShadowSetting shadowSetting)
+    public void Render(ScriptableRenderContext ctx, Camera cam, bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject ,ShadowSetting shadowSetting)
     {
         context = ctx;
         camera = cam;
@@ -52,14 +52,14 @@ public class CameraRenderer
         commandBuffer.BeginSample(sampleName);
         ExecuteBuffer();
         //设置灯光数据、绘制ShadowMap
-        lighting.Setup(context, cullingResults, shadowSetting);
+        lighting.Setup(context, cullingResults, shadowSetting, useLightsPerObject);
         commandBuffer.EndSample(sampleName);
 
         //摄像机渲染物体相关设置
         Setup();
 
         //画可见几何体
-        DrawVisableGeometry(useDynamicBatch, useGPUIInstance);
+        DrawVisableGeometry(useDynamicBatch, useGPUIInstance, useLightsPerObject);
 
         //画错误shader
         DrawUnsupportShaders();
@@ -100,8 +100,12 @@ public class CameraRenderer
     /// <summary>
     /// 画几何体
     /// </summary>
-    void DrawVisableGeometry(bool useDynamicBatch, bool useGPUIInstance)
+    void DrawVisableGeometry(bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject)
     {
+
+        PerObjectData lightsPerObjectsFlags =
+            useLightsPerObject ? PerObjectData.LightData | PerObjectData.LightIndices : PerObjectData.None;
+        
         //排序设置、绘制设置 、过滤设置
         SortingSettings sortingSettings = new SortingSettings(camera)
         {
@@ -120,6 +124,7 @@ public class CameraRenderer
                             | PerObjectData.OcclusionProbe 
                             | PerObjectData.OcclusionProbeProxyVolume
                             | PerObjectData.ReflectionProbes
+                            | lightsPerObjectsFlags
         };
         drawingSettings.SetShaderPassName(1, litShaderTagID);
 

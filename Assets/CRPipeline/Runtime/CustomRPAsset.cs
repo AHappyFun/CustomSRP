@@ -10,14 +10,14 @@ using UnityEngine.Rendering;
 public class CustomRPAsset : RenderPipelineAsset
 {
     [SerializeField]
-    bool UseDynamicBatching = true, UseGPUInstancing = true, UseSRPBatcher = true;
+    bool UseDynamicBatching = true, UseGPUInstancing = true, UseSRPBatcher = true, UseLightsPerObject = true;
 
     [SerializeField]
     ShadowSetting shadowSetting = default;
 
     protected override RenderPipeline CreatePipeline()
     {
-        return new CustomRP(UseDynamicBatching, UseGPUInstancing, UseSRPBatcher, shadowSetting);
+        return new CustomRP(UseDynamicBatching, UseGPUInstancing, UseSRPBatcher, UseLightsPerObject, shadowSetting);
     }
 
     
