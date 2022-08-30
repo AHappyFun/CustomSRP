@@ -105,6 +105,7 @@ public class Lighting
 
         }
         
+        //剔除不可见的光
         if (useLightsPerobject)
         {
             for (; i < indexMap.Length; i++)

@@ -67,11 +67,12 @@ Light GetOtherLight(int lightIndex, Surface surfaceWS, MyShadowData shadowdata)
 {
 	Light light;
 	light.color = _OtherLightColors[lightIndex].rgb;
-	float3 dir = _OtherLightPositions[lightIndex].xyz - surfaceWS.position;
-	light.direction = normalize(dir);
+	float3 dis = _OtherLightPositions[lightIndex].xyz - surfaceWS.position;
+	light.direction = normalize(dis);
 
 	//point atten
-	float distanceSqr = max(dot(dir, dir), 0.00001);
+	float distanceSqr = max(dot(dis, dis), 0.00001);
+	float distanceAtten = rcp(distanceSqr);
 	float rangeAtten = Square(saturate(1.0 - Square(distanceSqr * _OtherLightPositions[lightIndex].w)));
 	//spot atten
 	float4 spotAngle = _OtherLightSpotAngles[lightIndex];
@@ -82,7 +83,7 @@ Light GetOtherLight(int lightIndex, Surface surfaceWS, MyShadowData shadowdata)
 	float shadowAtten = GetOtherShadowAttenuation(otherShadowData, shadowdata, surfaceWS);
 	
 	
-	light.attenuation = spotAtten * rangeAtten / distanceSqr;
+	light.attenuation = spotAtten * rangeAtten * distanceAtten;
 	light.attenuation *= shadowAtten;
 	return light;
 }

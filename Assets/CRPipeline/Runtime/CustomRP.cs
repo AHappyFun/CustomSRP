@@ -101,6 +101,7 @@ public partial class CustomRP : RenderPipeline
                         break;
                 }
 
+                lightData.falloff = FalloffType.InverseSquared;
                 output[i] = lightData;
             }
         };
