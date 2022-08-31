@@ -56,7 +56,8 @@ public class ShadowSetting
 
         public CascadeBlendMode cascadeBlend;
     }
-
+    
+    [System.Serializable]
     public struct OtherShadow
     {
         public TextureSize atlasSize;

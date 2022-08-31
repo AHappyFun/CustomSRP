@@ -11,8 +11,17 @@ public class Shadows
         public float slopeScaleBias;
         public float nearPlaneOffset;
     }
+    struct ShadowedOtherLight
+    {
+        public int visibleLightIndex;
+        public float slopeScaleBias;
+        public float normalBias;
+    }
+    
     //开阴影的方向光有数量限制
     ShadowedDirectionalLight[] shadowedDirectionLights = new ShadowedDirectionalLight[maxShadowdDirectionalLightCount];
+
+    ShadowedOtherLight[] shadowedOtherLights = new ShadowedOtherLight[maxShadowdOtherLightCount];
 
     const string bufferName = "ShadowMap";
 
@@ -162,6 +171,13 @@ public class Shadows
         {
             return new Vector4(-light.shadowStrength, 0f, 0f, maskChannel);
         }
+
+        shadowedOtherLights[ShadowedOtherLightCount] = new ShadowedOtherLight
+        {
+            visibleLightIndex = visableLightIndex,
+            slopeScaleBias = light.shadowBias,
+            normalBias = light.shadowNormalBias
+        };
         
         return new Vector4(light.shadowStrength, ShadowedOtherLightCount++, 0f, maskChannel);
     }
@@ -174,6 +190,8 @@ public class Shadows
 
     public void Render()
     {
+        //--------------
+        //Draw ShadowMap 三种灯光的ShadowMap
         if(ShadowedDirectionLightCount > 0)
         {
             RenderDirectionalShadows();
@@ -190,7 +208,6 @@ public class Shadows
         }
         else
         {
-            //默认ShadowMap
             buffer.SetGlobalTexture(otherShadowAtlasId, dirShadowAtlasId);
         }
         
@@ -212,7 +229,7 @@ public class Shadows
         ExecuteBuffer();
     }
 
-    //渲染平行光的ShadowMap，多灯光就要进行分块
+    //渲染平行光的ShadowMap，多灯光 多级联 进行分块
     void RenderDirectionalShadows()
     {
         int atlasSize = (int)settings.directional.atlasSize;
@@ -320,15 +337,37 @@ public class Shadows
         int tiles = ShadowedOtherLightCount;
         int split = tiles <= 1 ? 1 : (tiles <= 4 ? 2 : 4);
         int tileSize = atlasSize / split;
-        for (int i = 0; i < ShadowedDirectionLightCount; i++)
+        for (int i = 0; i < ShadowedOtherLightCount; i++)
         {
+            RenderSpotShadows(i, split, tileSize);
         }
 
-        buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
-        SetKeywords(otherFilerKeywords, (int)settings.directional.filter - 1);
+        buffer.SetGlobalMatrixArray(otherShadowMatricesId, otherShadowMatrices);
+        SetKeywords(otherFilerKeywords, (int)settings.other.filter - 1);
         
         buffer.EndSample(bufferName);
         ExecuteBuffer();
+    }
+
+    //渲染单个聚光灯的ShadowMap
+    void RenderSpotShadows(int index, int split, int tileSize)
+    {
+        ShadowedOtherLight light = shadowedOtherLights[index];
+        var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex);
+        cullingResults.ComputeSpotShadowMatricesAndCullingPrimitives(
+            light.visibleLightIndex, out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix, out ShadowSplitData splitData
+        );
+        shadowSettings.splitData = splitData;
+        otherShadowMatrices[index] = ConvertToAtlasMatrix(
+            projectionMatrix * viewMatrix,
+            SetTileViewport(index, split, tileSize),
+            split
+        );
+        buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
+        //buffer.SetGlobalDepthBias(0f, light.slopeScaleBias);
+        ExecuteBuffer();
+        context.DrawShadows(ref shadowSettings);
+        buffer.SetGlobalDepthBias(0f, 0f);
     }
 
     /// <summary>
