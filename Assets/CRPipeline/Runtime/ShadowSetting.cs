@@ -57,9 +57,17 @@ public class ShadowSetting
         public CascadeBlendMode cascadeBlend;
     }
 
+    public struct OtherShadow
+    {
+        public TextureSize atlasSize;
+
+        public FilterMode filter;
+    }
+
     public Directional directional = new Directional
     {
         atlasSize = TextureSize._1024,
+        filter = FilterMode.PCF2x2,
         cascadeCount = 4,
         cascadeRatio1 = 0.1f,
         cascadeRatio2 = 0.25f,
@@ -68,6 +76,10 @@ public class ShadowSetting
         cascadeBlend = Directional.CascadeBlendMode.Hard
     };
 
-
+    public OtherShadow other = new OtherShadow
+    {
+        atlasSize = TextureSize._1024,
+        filter = FilterMode.PCF2x2
+    };
 
 }
