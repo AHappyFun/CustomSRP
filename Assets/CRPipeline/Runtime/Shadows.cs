@@ -51,11 +51,13 @@ public class Shadows
 
     static int otherShadowAtlasId = Shader.PropertyToID("_OtherShadowAtlas");
     static int otherShadowMatricesId = Shader.PropertyToID("_OtherShadowMatrices");
+    static int otherShadowTilesId = Shader.PropertyToID("_OtherShadowTiles");
 
     static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades];
     static Vector4[] cascadeData = new Vector4[maxCascades];
     static Matrix4x4[] dirShadowMatrices = new Matrix4x4[maxShadowdDirectionalLightCount * maxCascades];
 
+    static Vector4[] otherShadowTiles = new Vector4[maxShadowdOtherLightCount];
     static Matrix4x4[] otherShadowMatrices = new Matrix4x4[maxShadowdOtherLightCount];
 
     //xy平行光 zw其他灯
@@ -287,6 +289,7 @@ public class Shadows
 
         float cullingFactor = Mathf.Max(0f, 0.8f - settings.directional.cascadeFade);
 
+        float tileScale = 1f / split;
         for (int i = 0; i < cascadeCount; i++)
         {
             cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(
@@ -306,7 +309,7 @@ public class Shadows
 
             Vector2 offset = SetTileViewport(tileIndex, split, tileSize);
             //VP矩阵传给Shader，以便转换到灯光Clip空间，然后采样ShadowMap
-            dirShadowMatrices[tileIndex] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix, offset, split);
+            dirShadowMatrices[tileIndex] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix, offset, tileScale);
             
             buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
             buffer.SetGlobalDepthBias(0f, light.slopeScaleBias);
@@ -346,6 +349,7 @@ public class Shadows
         }
 
         buffer.SetGlobalMatrixArray(otherShadowMatricesId, otherShadowMatrices);
+        buffer.SetGlobalVectorArray(otherShadowTilesId, otherShadowTiles);
         SetKeywords(otherFilerKeywords, (int)settings.other.filter - 1);
         
         buffer.EndSample(bufferName);
@@ -361,10 +365,16 @@ public class Shadows
             light.visibleLightIndex, out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix, out ShadowSplitData splitData
         );
         shadowSettings.splitData = splitData;
+        float texelSize = 2f / (tileSize * projectionMatrix.m00);
+        float filterSize = texelSize * ((float) settings.other.filter + 1f);
+        float bias = light.normalBias * filterSize * 1.4142136f;
+        Vector2 offset = SetTileViewport(index, split, tileSize);
+        float tileScale = 1f / split;
+        SetOtherTileData(index, offset, tileScale, bias);
         otherShadowMatrices[index] = ConvertToAtlasMatrix(
             projectionMatrix * viewMatrix,
-            SetTileViewport(index, split, tileSize),
-            split
+            offset,
+            tileScale
         );
         buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
         //buffer.SetGlobalDepthBias(0f, light.slopeScaleBias);
@@ -429,7 +439,7 @@ public class Shadows
     /// <param name="offset"></param>
     /// <param name="split"></param>
     /// <returns></returns>
-    Matrix4x4 ConvertToAtlasMatrix(Matrix4x4 m, Vector2 offset, int split)
+    Matrix4x4 ConvertToAtlasMatrix(Matrix4x4 m, Vector2 offset, float scale)
     {
         //判断Zbuffer 反向
         //OpenGL之外的图形API都使用ReverseZ，以便提高近处的精度
@@ -440,7 +450,7 @@ public class Shadows
             m.m22 = -m.m22;
             m.m23 = -m.m23;
         }
-        float scale = 1f / split;
+        
         //从-1~1 转换到 0~1 缩放0.5再平移0.5
         //只有x 和 y做ScaleOffset
         m.m00 = (0.5f * (m.m00 + m.m30) + offset.x * m.m30) * scale;
@@ -457,6 +467,17 @@ public class Shadows
         m.m23 = 0.5f * (m.m23 + m.m33);
 
         return m;
+    }
+
+    void SetOtherTileData(int index,Vector2 offset, float scale, float bias)
+    {
+        float border = atlasSizes.w * 0.5f;
+        Vector4 data;
+        data.x = offset.x * scale + border;
+        data.y = offset.y * scale + border;
+        data.z = scale - border - border;
+        data.w = bias;
+        otherShadowTiles[index] = data;
     }
 
     public void CleanUp()
