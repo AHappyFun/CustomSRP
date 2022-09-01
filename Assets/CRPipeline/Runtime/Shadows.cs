@@ -47,6 +47,7 @@ public class Shadows
     static int cascadeDataId = Shader.PropertyToID("_CascadeData");
     static int shadowAtlasSizeId = Shader.PropertyToID("_ShadowAtlasSize");
     static int shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
+    static int shadowPancakingId = Shader.PropertyToID("_ShadowPancaking");  //ShadowPancking 阴影平坠开关
 
     static int otherShadowAtlasId = Shader.PropertyToID("_OtherShadowAtlas");
     static int otherShadowMatricesId = Shader.PropertyToID("_OtherShadowMatrices");
@@ -241,6 +242,9 @@ public class Shadows
         buffer.SetRenderTarget(dirShadowAtlasId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
         //ClearBuffer先
         buffer.ClearRenderTarget(true, false, Color.clear);
+        
+        //平行光开启ShadowPanck
+        buffer.SetGlobalFloat(shadowPancakingId, 1f);
 
         buffer.BeginSample(bufferName);
         ExecuteBuffer();
@@ -253,17 +257,14 @@ public class Shadows
         {
             RenderDirectionalShadows(i, split, tileSize);
         }
-        //buffer.SetGlobalInt(cascadeCountId, settings.directional.cascadeCount);
+
         buffer.SetGlobalVectorArray(cascadeCullingSpheresId, cascadeCullingSpheres);
         buffer.SetGlobalVectorArray(cascadeDataId, cascadeData);
         buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
-        //float f = 1f - settings.directional.cascadeFade;
-        //buffer.SetGlobalVector(
-        //    shadowDistanceFadeId, new Vector4(1f / settings.maxDistance, 1f / settings.distanceFade, 1f / (1f - f*f))
-        //);
+
         SetKeywords(directionalFilterKeywords, (int)settings.directional.filter - 1);
         SetKeywords(cascadeBlendKeywords, (int)settings.directional.cascadeBlend - 1);
-        //buffer.SetGlobalVector(shadowAtlasSizeId, new Vector4(atlasSize, 1f/atlasSize));
+
         
         buffer.EndSample(bufferName);
         ExecuteBuffer();
@@ -329,6 +330,8 @@ public class Shadows
         buffer.SetRenderTarget(otherShadowAtlasId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
         //ClearBuffer先
         buffer.ClearRenderTarget(true, false, Color.clear);
+        
+        buffer.SetGlobalFloat(shadowPancakingId, 0f);
 
         buffer.BeginSample(bufferName);
         ExecuteBuffer();

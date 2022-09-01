@@ -4,6 +4,7 @@
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Shadow/ShadowSamplingTent.hlsl"
 
+//PCF
 #if defined(_DIRECTIONAL_PCF3)
 	#define DIRECTION_FILTER_SAMPLERS 4
 	#define DIRECTION_FILTER_SETUP SampleShadow_ComputeSamples_Tent_3x3
@@ -15,11 +16,24 @@
     #define DIRECTION_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
 #endif
 
+#if defined(_OTHER_PCF3)
+	#define OTHER_FILTER_SAMPLES 4
+	#define OTHER_FILTER_SETUP SampleShadow_ComputeSamples_Tent_3x3
+#elif defined(_OTHER_PCF5)
+	#define OTHER_FILTER_SAMPLES 9
+	#define OTHER_FILTER_SETUP SampleShadow_ComputeSamples_Tent_5x5
+#elif defined(_OTHER_PCF7)
+	#define OTHER_FILTER_SAMPLES 16
+	#define OTHER_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
+#endif
+
 #define MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT 4
+#define MAX_SHADOWED_OTHER_LIGHT_COUNT 16
 #define MAX_CASCADE_COUNT 4
 
 
 TEXTURE2D_SHADOW(_DirectionalShadowAtlas);
+TEXTURE2D_SHADOW(_OtherShadowAtlas);
 #define SHADOW_SAMPLER sampler_linear_clamp_compare
 SAMPLER_CMP(SHADOW_SAMPLER);
 
@@ -27,6 +41,7 @@ CBUFFER_START(_CustomShadows)
 	int _CascadeCount;
 	float4 _CascadeCullingSpheres[MAX_CASCADE_COUNT];
 	float4x4 _DirectionalShadowMatrices[MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT * MAX_CASCADE_COUNT];
+	float4x4 _OtherShadowMatrices[MAX_SHADOWED_OTHER_LIGHT_COUNT];
 	float4 _ShadowAtlasSize;
 	float4 _ShadowDistanceFade;
 	float4 _CascadeData[MAX_CASCADE_COUNT];
