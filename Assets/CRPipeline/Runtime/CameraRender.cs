@@ -12,6 +12,8 @@ public class CameraRenderer
     static Material errorMat;
 
     Lighting lighting = new Lighting();
+    
+    PostFXStack postFXStack = new PostFXStack();
 
     static ShaderTagId unlitShaderTagID = new ShaderTagId("SRPDefaultUnlit"); //SRP默认Tag
     static ShaderTagId litShaderTagID = new ShaderTagId("CustomLit");  //自定义受光材质Tag
@@ -26,6 +28,8 @@ public class CameraRenderer
         new ShaderTagId("VertexLM")
     };
 
+    private static int frameBufferID = Shader.PropertyToID("_CameraFrameBuffer");
+
 
     const string bufferName = "---Render Camera---";
 #if UNITY_EDITOR
@@ -33,7 +37,7 @@ public class CameraRenderer
 #endif
     private CommandBuffer commandBuffer = new CommandBuffer { name = bufferName };
 
-    public void Render(ScriptableRenderContext ctx, Camera cam, bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject ,ShadowSetting shadowSetting)
+    public void Render(ScriptableRenderContext ctx, Camera cam, bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject ,ShadowSetting shadowSetting, PostFXSettings postFXSettings)
     {
         context = ctx;
         camera = cam;
@@ -53,6 +57,9 @@ public class CameraRenderer
         ExecuteBuffer();
         //设置灯光数据、绘制ShadowMap
         lighting.Setup(context, cullingResults, shadowSetting, useLightsPerObject);
+        
+        postFXStack.Setup(context, cam, postFXSettings);
+        
         commandBuffer.EndSample(sampleName);
 
         //摄像机渲染物体相关设置
@@ -65,10 +72,18 @@ public class CameraRenderer
         DrawUnsupportShaders();
 
         //画Gizmos
-        DrawGizmos();
+        DrawGizmosBeforePostProcess();
+        
+        //叠加后处理
+        if (postFXStack.IsActive)
+        {
+            postFXStack.Render(frameBufferID);
+        }
+        
+        DrawGizmosAfterPostProcess();
 
         //清理RT等资源
-        lighting.CleanUp();
+        Cleanup();
 
         Submit();
     }
@@ -81,6 +96,15 @@ public class CameraRenderer
 
         CameraClearFlags clearFlags = camera.clearFlags;
 
+        if (postFXStack.IsActive)
+        {
+            if (clearFlags > CameraClearFlags.Color)
+            {
+                clearFlags = CameraClearFlags.Color;
+            }
+            commandBuffer.GetTemporaryRT(frameBufferID, camera.pixelWidth, camera.pixelHeight, 32, FilterMode.Bilinear, RenderTextureFormat.Default);
+            commandBuffer.SetRenderTarget(frameBufferID, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+        }
 
         //commandBuffer里注入样本，可以在Profiler和FrameDebugger里看到，需要有开始和结束
         commandBuffer.BeginSample(bufferName);
@@ -162,18 +186,7 @@ public class CameraRenderer
         context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
     }
 
-    /// <summary>
-    /// 画Gizmos
-    /// </summary>
-    void DrawGizmos()
-    {
-        if (UnityEditor.Handles.ShouldRenderGizmos())
-        {
-            context.DrawGizmos(camera, GizmoSubset.PreImageEffects);
-            context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
-        }
-    }
-
+#if UNITY_EDITOR
     /// <summary>
     /// 让UI可以在Scene渲染
     /// </summary>
@@ -184,12 +197,34 @@ public class CameraRenderer
             ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
         }
     }
-
-#if UNITY_EDITOR
+    
+    /// <summary>
+    /// 画Gizmos
+    /// </summary>
+    void DrawGizmosBeforePostProcess()
+    {
+        if (UnityEditor.Handles.ShouldRenderGizmos())
+        {
+            context.DrawGizmos(camera, GizmoSubset.PreImageEffects);
+        }
+    }
+    
+    void DrawGizmosAfterPostProcess()
+    {
+        if (UnityEditor.Handles.ShouldRenderGizmos())
+        {
+            context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
+        }
+    }
+    
     void PrepareCameraBuffer()
     {
         commandBuffer.name = sampleName = camera.name;
     }
+#else 
+    void DrawGizmosBeforePostProcess();
+   
+    void DrawGizmosAfterPostProcess();
 #endif
 
     void Submit()
@@ -221,5 +256,14 @@ public class CameraRenderer
             return true;
         }
         return false;
+    }
+
+    void Cleanup()
+    {
+        lighting.CleanUp();
+        if (postFXStack.IsActive)
+        {
+            commandBuffer.ReleaseTemporaryRT(frameBufferID);
+        }
     }
 }

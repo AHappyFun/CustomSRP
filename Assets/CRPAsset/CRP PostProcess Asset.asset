@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a03c7d9c9084fb39076438969de171e, type: 3}
+  m_Name: CRP PostProcess Asset
+  m_EditorClassIdentifier: 
+  shader: {fileID: 4800000, guid: bdb578581aee487a997fb2602fa678e2, type: 3}
+  bloomSettings:
+    MaxIterations: 2
+    downScaleLimit: 2

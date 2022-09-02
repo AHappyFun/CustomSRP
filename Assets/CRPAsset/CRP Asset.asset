@@ -17,7 +17,7 @@ MonoBehaviour:
   UseSRPBatcher: 0
   UseLightsPerObject: 1
   shadowSetting:
-    maxDistance: 91.86
+    maxDistance: 11.9
     distanceFade: 0.133
     directional:
       atlasSize: 4096
@@ -28,3 +28,7 @@ MonoBehaviour:
       cascadeRatio2: 0.4
       cascadeRatio3: 0.5
       cascadeBlend: 1
+    other:
+      atlasSize: 1024
+      filter: 0
+  postFXSettings: {fileID: 11400000, guid: b6fd963b56d6dc647981c5fdbc0d1857, type: 2}
