@@ -19,16 +19,19 @@ public partial class CustomRP: RenderPipeline
 
     ShadowSetting shadowSettings;
 
+    PostFXSettings postFXSettings;
+
     CameraRenderer renderer = new CameraRenderer();
 
 
-    public CustomRP(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, bool useLightsPerObject, ShadowSetting shadowSetting)
+    public CustomRP(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, bool useLightsPerObject, ShadowSetting shadowSetting, PostFXSettings postFXSettings)
     {
         cullResults = new CullingResults();
 
         this.useDynamicBatch = useDynamicBatching;
         this.useGPUInstance = useGPUInstancing;
         this.shadowSettings = shadowSetting;
+        this.postFXSettings = postFXSettings;
         this.useLightsPerObject = useLightsPerObject;
         GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
         GraphicsSettings.lightsUseLinearIntensity = true; //灯光线性空间
@@ -46,7 +49,7 @@ public partial class CustomRP: RenderPipeline
     {
         foreach (var cam in cameras)
         {
-            renderer.Render(renderContext, cam, this.useDynamicBatch, this.useGPUInstance, useLightsPerObject, shadowSettings);       
+            renderer.Render(renderContext, cam, this.useDynamicBatch, this.useGPUInstance, useLightsPerObject, shadowSettings, this.postFXSettings);       
         }
     }
 }
