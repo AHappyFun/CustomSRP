@@ -32,6 +32,17 @@ public class PostFXSettings : ScriptableObject
 
         [Min(1f)]
         public int downScaleLimit;
+
+        public bool bicubicUpsampling;
+
+        [Range(0f, 1f)]
+        public float threshold;
+
+        [Range(0f, 1f)]
+        public float thresholdKnee;
+
+        [Min(0f)]
+        public float intensity;
     }
 
     [SerializeField]

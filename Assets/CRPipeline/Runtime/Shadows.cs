@@ -226,7 +226,7 @@ public class Shadows
         buffer.BeginSample(bufferName);
         SetKeywords(shadowMaskKeywords, useShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
         
-        //各个灯都需要的数据
+        //各个灯都需要的数据 
         buffer.SetGlobalInt(cascadeCountId, ShadowedDirectionLightCount > 0 ? settings.directional.cascadeCount : 0);
         float f = 1f - settings.directional.cascadeFade;
         buffer.SetGlobalVector(
@@ -381,9 +381,13 @@ public class Shadows
             light.visibleLightIndex, out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix, out ShadowSplitData splitData
         );
         shadowSettings.splitData = splitData;
+        
+        //动态计算NormalBias
+        //因为透视矩阵，尖刺远处比较大近处小
         float texelSize = 2f / (tileSize * projectionMatrix.m00);
         float filterSize = texelSize * ((float) settings.other.filter + 1f);
         float bias = light.normalBias * filterSize * 1.4142136f;
+        
         Vector2 offset = SetTileViewport(index, split, tileSize);
         float tileScale = 1f / split;
         SetOtherTileData(index, offset, tileScale, bias);

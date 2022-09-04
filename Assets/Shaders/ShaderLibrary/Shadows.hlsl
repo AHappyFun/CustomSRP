@@ -93,6 +93,7 @@ MyShadowData GetShadowData(Surface surfaceWS){
 	data.shadowMask.always = false;
 	data.cascadeBlend = 1.0;
 	//最大距离之外无阴影,做渐变
+	//这个距离衰减基于视角空间，作为3种阴影的全局衰减
 	data.strength = FadeShadowStrength(surfaceWS.depth, _ShadowDistanceFade.x, _ShadowDistanceFade.y);
 	int i = 0;
 	//计算出应该采样哪一级cascade，最后i就是级联层级
