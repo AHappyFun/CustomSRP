@@ -62,6 +62,7 @@ public class Shadows
     static Matrix4x4[] otherShadowMatrices = new Matrix4x4[maxShadowdOtherLightCount];
 
     //xy平行光 zw其他灯
+    //x: atlasSize y: 1/atlasSize
     Vector4 atlasSizes;
 
     private static string[] directionalFilterKeywords =
@@ -385,6 +386,7 @@ public class Shadows
         //动态计算NormalBias
         //因为透视矩阵，尖刺远处比较大近处小
         float texelSize = 2f / (tileSize * projectionMatrix.m00);
+        //??
         float filterSize = texelSize * ((float) settings.other.filter + 1f);
         float bias = light.normalBias * filterSize * 1.4142136f;
         
@@ -527,6 +529,13 @@ public class Shadows
         return m;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="offset"></param>
+    /// <param name="scale"></param>
+    /// <param name="bias"></param>
     void SetOtherTileData(int index,Vector2 offset, float scale, float bias)
     {
         float border = atlasSizes.w * 0.5f;
