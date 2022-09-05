@@ -384,10 +384,12 @@ public class Shadows
         shadowSettings.splitData = splitData;
         
         //动态计算NormalBias
-        //因为透视矩阵，尖刺远处比较大近处小
-        float texelSize = 2f / (tileSize * projectionMatrix.m00);
-        //??
-        float filterSize = texelSize * ((float) settings.other.filter + 1f);
+        //因为透视矩阵，尖刺远处比较大近处小,normalbias也需要随着距离变大
+        //单位像素的距离
+        float distancePerTexelSize = 2f / (tileSize * projectionMatrix.m00);
+        //根据PCF核的大小，2x2就偏1个像素，3x3就2个, 5x5就3个
+        float filterSize = distancePerTexelSize * ((float) settings.other.filter + 1f);
+        //NormalBias偏移考虑最大情况根号2
         float bias = light.normalBias * filterSize * 1.4142136f;
         
         Vector2 offset = SetTileViewport(index, split, tileSize);
@@ -406,6 +408,7 @@ public class Shadows
     }
 
     //渲染单个点光源的ShadowMap
+    //渲染Cubemap 6个面
     void RenderPointShadows(int index, int split, int tileSize)
     {
         ShadowedOtherLight light = shadowedOtherLights[index];
@@ -418,15 +421,19 @@ public class Shadows
         float bias = light.normalBias * filterSize * 1.4142136f;
         
         float tileScale = 1f / split;
+        //fov bias 因为有边界，稍微扩大fov
         float fovBias = Mathf.Atan(1f + bias + filterSize) * Mathf.Rad2Deg * 2f - 90f;
         for (int i = 0; i < 6; i++)
         {
             cullingResults.ComputePointShadowMatricesAndCullingPrimitives(
                 light.visibleLightIndex,(CubemapFace)i, fovBias, out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix, out ShadowSplitData splitData
             );
+            //Y取反 因为unity画出来ShadowMap是反的，所以需要Y取反
+            viewMatrix.m10 = -viewMatrix.m10;
             viewMatrix.m11 = -viewMatrix.m11;
             viewMatrix.m12 = -viewMatrix.m12;
             viewMatrix.m13 = -viewMatrix.m13;
+            
             shadowSettings.splitData = splitData;
             int tileIndex = index + i;
             Vector2 offset = SetTileViewport(tileIndex, split, tileSize);
@@ -454,12 +461,15 @@ public class Shadows
     /// <param name="tileSize"></param>
     void SetCaseData(int index, Vector4 cullingSphere, float tileSize)
     {
-        float texelSize = 2f * cullingSphere.w / tileSize;
-        float filterSize = texelSize * ((float) settings.directional.filter + 1f);
+        //一个像素对应世界空间的距离
+        float perDistance = 2f * cullingSphere.w / tileSize;
+        //根据PCF核的大小，2x2就偏1个像素，3x3就2个, 5x5就3个
+        float filterSize = perDistance * ((float) settings.directional.filter + 1f);
         cullingSphere.w -= filterSize;
         cullingSphere.w *= cullingSphere.w;
         
         cascadeCullingSpheres[index] = cullingSphere; //储存平方
+        //NormalBias偏移考虑最大情况根号2
         cascadeData[index] = new Vector4(1f / cullingSphere.w, filterSize* 1.4142136f);
   
     }

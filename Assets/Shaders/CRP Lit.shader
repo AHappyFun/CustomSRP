@@ -97,7 +97,6 @@
 				"LightMode" = "ShadowCaster"
 			}
 			ColorMask 0
-
 			HLSLPROGRAM
 			#pragma target 3.5
 			#pragma multi_compile_instancing
