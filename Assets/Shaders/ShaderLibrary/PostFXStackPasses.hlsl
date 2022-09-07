@@ -111,6 +111,8 @@ float4 BloomCombinePassFragment(Varyings input) : SV_TARGET
 }
 
 //根据VertexID得到PosCS和screenUV
+// clip 0(-1, -1)  1( -1, 3) 2(3, -1)
+// UV   0(0, 0)    1(0, 2)   2(2, 0)
 Varyings DefaultPassVertex(uint vertexID : SV_VertexID)
 {
     Varyings output;
