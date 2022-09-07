@@ -490,7 +490,7 @@ public class Shadows
     }
 
     /// <summary>
-    /// 设置ShadowMap的绘制偏移
+    /// 设置ShadowMap的绘制偏移 offset x 列 y 行
     /// </summary>
     /// <param name="tileIndex">格子的Index</param>
     /// <param name="split">划分数量，灯光数量和级联数量少的特殊情况下是1和2，正常是4</param>
@@ -543,7 +543,7 @@ public class Shadows
     }
 
     /// <summary>
-    /// 
+    /// 防止采样到边界之外 data.xy是最小UV data.xy + data.z是最大UV
     /// </summary>
     /// <param name="index"></param>
     /// <param name="offset"></param>
@@ -551,11 +551,12 @@ public class Shadows
     /// <param name="bias"></param>
     void SetOtherTileData(int index,Vector2 offset, float scale, float bias)
     {
-        float border = atlasSizes.w * 0.5f;
+        
+        float uvPerHalfPixel = atlasSizes.w * 0.5f;
         Vector4 data;
-        data.x = offset.x * scale + border;
-        data.y = offset.y * scale + border;
-        data.z = scale - border - border;
+        data.x = offset.x * scale + uvPerHalfPixel; //最小U + 半个像素UV
+        data.y = offset.y * scale + uvPerHalfPixel; //最小V + 半个像素UV
+        data.z = scale - 2 * uvPerHalfPixel; //UV的扩展范围减去一个像素
         data.w = bias;
         otherShadowTiles[index] = data;
     }
