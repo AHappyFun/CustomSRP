@@ -15,6 +15,8 @@ public class CameraRenderer
     
     PostFXStack postFXStack = new PostFXStack();
 
+    private bool useHDR;
+
     static ShaderTagId unlitShaderTagID = new ShaderTagId("SRPDefaultUnlit"); //SRP默认Tag
     static ShaderTagId litShaderTagID = new ShaderTagId("CustomLit");  //自定义受光材质Tag
     //buildin 旧Tag
@@ -37,7 +39,7 @@ public class CameraRenderer
 #endif
     private CommandBuffer commandBuffer = new CommandBuffer { name = bufferName };
 
-    public void Render(ScriptableRenderContext ctx, Camera cam, bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject ,ShadowSetting shadowSetting, PostFXSettings postFXSettings)
+    public void Render(ScriptableRenderContext ctx, Camera cam, bool openHDR, bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject ,ShadowSetting shadowSetting, PostFXSettings postFXSettings)
     {
         context = ctx;
         camera = cam;
@@ -53,12 +55,15 @@ public class CameraRenderer
         {
             return;
         }
+
+        useHDR = openHDR && cam.allowHDR;
+        
         commandBuffer.BeginSample(sampleName);
         ExecuteBuffer();
         //设置灯光数据、绘制ShadowMap
         lighting.Setup(context, cullingResults, shadowSetting, useLightsPerObject);
         
-        postFXStack.Setup(context, cam, postFXSettings);
+        postFXStack.Setup(context, cam, postFXSettings, useHDR);
         
         commandBuffer.EndSample(sampleName);
 
@@ -102,7 +107,8 @@ public class CameraRenderer
             {
                 clearFlags = CameraClearFlags.Color;
             }
-            commandBuffer.GetTemporaryRT(frameBufferID, camera.pixelWidth, camera.pixelHeight, 32, FilterMode.Bilinear, RenderTextureFormat.Default);
+            //HDR FrameBuffer R16B16G16A16_SFloat
+            commandBuffer.GetTemporaryRT(frameBufferID, camera.pixelWidth, camera.pixelHeight, 32, FilterMode.Bilinear, useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default);
             commandBuffer.SetRenderTarget(frameBufferID, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
         }
 

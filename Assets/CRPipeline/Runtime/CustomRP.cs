@@ -15,7 +15,7 @@ public partial class CustomRP: RenderPipeline
     private ScriptableCullingParameters cullingParameters;
     private CullingResults cullResults;
 
-    bool useDynamicBatch, useGPUInstance, useLightsPerObject;
+    bool useDynamicBatch, useGPUInstance, useLightsPerObject, openHDR;
 
     ShadowSetting shadowSettings;
 
@@ -24,10 +24,11 @@ public partial class CustomRP: RenderPipeline
     CameraRenderer renderer = new CameraRenderer();
 
 
-    public CustomRP(bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, bool useLightsPerObject, ShadowSetting shadowSetting, PostFXSettings postFXSettings)
+    public CustomRP(bool openHDR, bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, bool useLightsPerObject, ShadowSetting shadowSetting, PostFXSettings postFXSettings)
     {
         cullResults = new CullingResults();
 
+        this.openHDR = openHDR;
         this.useDynamicBatch = useDynamicBatching;
         this.useGPUInstance = useGPUInstancing;
         this.shadowSettings = shadowSetting;
@@ -49,7 +50,7 @@ public partial class CustomRP: RenderPipeline
     {
         foreach (var cam in cameras)
         {
-            renderer.Render(renderContext, cam, this.useDynamicBatch, this.useGPUInstance, useLightsPerObject, shadowSettings, this.postFXSettings);       
+            renderer.Render(renderContext, cam, openHDR, this.useDynamicBatch, this.useGPUInstance, useLightsPerObject, shadowSettings, this.postFXSettings);       
         }
     }
 }

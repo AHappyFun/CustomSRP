@@ -16,8 +16,9 @@ MonoBehaviour:
   UseGPUInstancing: 1
   UseSRPBatcher: 0
   UseLightsPerObject: 1
+  openHDR: 1
   shadowSetting:
-    maxDistance: 11.9
+    maxDistance: 71
     distanceFade: 0.133
     directional:
       atlasSize: 4096

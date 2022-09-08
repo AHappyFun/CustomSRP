@@ -13,14 +13,18 @@ public class CustomRPAsset : RenderPipelineAsset
     bool UseDynamicBatching = true, UseGPUInstancing = true, UseSRPBatcher = true, UseLightsPerObject = true;
 
     [SerializeField]
+    bool openHDR = true;
+
+    [SerializeField]
     ShadowSetting shadowSetting = default;
 
     [SerializeField]
     PostFXSettings postFXSettings = default;
+    
 
     protected override RenderPipeline CreatePipeline()
     {
-        return new CustomRP(UseDynamicBatching, UseGPUInstancing, UseSRPBatcher, UseLightsPerObject, shadowSetting, postFXSettings);
+        return new CustomRP(openHDR, UseDynamicBatching, UseGPUInstancing, UseSRPBatcher, UseLightsPerObject, shadowSetting, postFXSettings);
     }
 
     
