@@ -56,6 +56,7 @@ public partial class PostFXStack
 
         int width = camera.pixelWidth / 2, height = camera.pixelHeight / 2;
 
+        //bloom关闭的情况
         if (bloom.MaxIterations == 0 || bloom.intensity <= 0f || height < bloom.downScaleLimit * 2 || width < bloom.downScaleLimit * 2)
         {
             Draw(sourceID, BuiltinRenderTextureType.CameraTarget, Pass.Copy);
@@ -75,8 +76,8 @@ public partial class PostFXStack
         RenderTextureFormat format = RenderTextureFormat.Default;
         buffer.GetTemporaryRT(bloomPrefilterID, width, height, 0, FilterMode.Bilinear, format);
         Draw(sourceID, bloomPrefilterID, Pass.BloomPrefilter);
-        width /= 2;
-        height /= 2;
+        //width /= 2;
+        //height /= 2;
         
         int fromID = bloomPrefilterID, toID = bloomPyramidID + 1;
 
