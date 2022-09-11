@@ -21,10 +21,20 @@ public class CustomRPAsset : RenderPipelineAsset
     [SerializeField]
     PostFXSettings postFXSettings = default;
     
+    public enum ColorLUTResolution
+    {
+        _16 = 16,
+        _32 = 32,
+        _64 = 64
+    }
+
+    [SerializeField]
+    ColorLUTResolution colorLutResolution = ColorLUTResolution._32;
+    
 
     protected override RenderPipeline CreatePipeline()
     {
-        return new CustomRP(openHDR, UseDynamicBatching, UseGPUInstancing, UseSRPBatcher, UseLightsPerObject, shadowSetting, postFXSettings);
+        return new CustomRP(openHDR, UseDynamicBatching, UseGPUInstancing, UseSRPBatcher, UseLightsPerObject, shadowSetting, postFXSettings, (int)colorLutResolution);
     }
 
     

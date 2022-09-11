@@ -39,7 +39,7 @@ public class CameraRenderer
 #endif
     private CommandBuffer commandBuffer = new CommandBuffer { name = bufferName };
 
-    public void Render(ScriptableRenderContext ctx, Camera cam, bool openHDR, bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject ,ShadowSetting shadowSetting, PostFXSettings postFXSettings)
+    public void Render(ScriptableRenderContext ctx, Camera cam, bool openHDR, bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject ,ShadowSetting shadowSetting, PostFXSettings postFXSettings, int colorLUTResolution)
     {
         context = ctx;
         camera = cam;
@@ -63,7 +63,7 @@ public class CameraRenderer
         //设置灯光数据、绘制ShadowMap
         lighting.Setup(context, cullingResults, shadowSetting, useLightsPerObject);
         
-        postFXStack.Setup(context, cam, postFXSettings, useHDR);
+        postFXStack.Setup(context, cam, postFXSettings, useHDR, colorLUTResolution);
         
         commandBuffer.EndSample(sampleName);
 

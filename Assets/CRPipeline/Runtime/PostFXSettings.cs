@@ -25,6 +25,7 @@ public class PostFXSettings : ScriptableObject
     }
     
 
+    //Bloom
     [SerializeField]
     private BloomSettings bloomSettings = new BloomSettings
     {
@@ -32,11 +33,59 @@ public class PostFXSettings : ScriptableObject
     };
     public BloomSettings Bloom => bloomSettings;
 
+    //ToneMapping
     [SerializeField]
     private ToneMappingSettings toneMapping = default;
 
     public ToneMappingSettings ToneMapping => toneMapping;
+
+    //Color Grading
+    [SerializeField] 
+    private ColorAdjustmentsSettings colorAdjustments = new ColorAdjustmentsSettings
+    {
+        colorFilter = Color.white
+    };
+
+    public ColorAdjustmentsSettings ColorAdjustments => colorAdjustments;
+
+    [SerializeField]
+    private WhiteBalanceSettings whiteBalance = default;
+
+    public WhiteBalanceSettings WhiteBlance => whiteBalance;
+
+    [SerializeField]
+    private SplitToningSettings splitToning = new SplitToningSettings
+    {
+        shadows = Color.gray,
+        highLights = Color.gray
+    };
+
+    public SplitToningSettings SplitToning => splitToning;
+
+    [SerializeField]
+    private ChannelMixerSettings channelMixer = new ChannelMixerSettings
+    {
+        red = Vector3.right,
+        green = Vector3.up,
+        blue = Vector3.forward
+    };
+
+    public ChannelMixerSettings ChannelMixer => channelMixer;
+
+    [SerializeField]
+    private ShadowMidtonesHighlightsSettings shadowsMidtonesHighlights = new ShadowMidtonesHighlightsSettings
+    {
+        shadows = Color.white,
+        midtones = Color.white,
+        highlights = Color.white,
+        shadowEnd = 0.3f,
+        highlightsStart = 0.55f,
+        highlightsEnd = 1f
+    };
+
+    public ShadowMidtonesHighlightsSettings ShadowsMidtonesHighlights => shadowsMidtonesHighlights;
     
+    //-----Setting Struct-------
     [Serializable]
     public struct BloomSettings
     {
@@ -78,12 +127,63 @@ public class PostFXSettings : ScriptableObject
     {
         public enum Mode
         {
-            None = -1,
-            Neutral = 0,
-            Reinhard = 1,
-            ACES = 2 
+            None = 0,
+            Neutral = 1,
+            Reinhard = 2,
+            ACES = 3 
         }
 
         public Mode mode;
+    }
+
+    [Serializable]
+    public struct ColorAdjustmentsSettings
+    {
+        public float postExposure;
+
+        [Range(-100f, 100f)]
+        public float contrast;
+
+        [ColorUsage(false, true)]
+        public Color colorFilter;
+
+        [Range(-180f, 180f)]
+        public float hueShift;
+
+        [Range(-100f, 100f)]
+        public float saturation;
+    }
+
+    [Serializable]
+    public struct WhiteBalanceSettings
+    {
+        [Range(-100f, 100f)]
+        public float temperature, tint;
+    }
+
+    [Serializable]
+    public struct SplitToningSettings
+    {
+        [ColorUsage(false)]
+        public Color shadows, highLights;
+
+        [Range(-100f, 100f)]
+        public float balance;
+    }
+    
+    [Serializable]
+    public struct ChannelMixerSettings
+    {
+        public Vector3 red, green, blue;
+    }
+    
+    [Serializable]
+    public struct ShadowMidtonesHighlightsSettings
+    {
+        [ColorUsage(false, true)]
+        public Color shadows, midtones, highlights;
+
+        [Range(0f, 2f)]
+        public float shadowsStart, shadowEnd, highlightsStart, highlightsEnd;
     }
 }

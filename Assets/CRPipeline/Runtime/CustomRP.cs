@@ -23,8 +23,9 @@ public partial class CustomRP: RenderPipeline
 
     CameraRenderer renderer = new CameraRenderer();
 
-
-    public CustomRP(bool openHDR, bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, bool useLightsPerObject, ShadowSetting shadowSetting, PostFXSettings postFXSettings)
+    private int colorLUTResolution;
+    
+    public CustomRP(bool openHDR, bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, bool useLightsPerObject, ShadowSetting shadowSetting, PostFXSettings postFXSettings, int colorLutResolution)
     {
         cullResults = new CullingResults();
 
@@ -34,6 +35,7 @@ public partial class CustomRP: RenderPipeline
         this.shadowSettings = shadowSetting;
         this.postFXSettings = postFXSettings;
         this.useLightsPerObject = useLightsPerObject;
+        this.colorLUTResolution = colorLutResolution;
         GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
         GraphicsSettings.lightsUseLinearIntensity = true; //灯光线性空间
 
@@ -50,7 +52,7 @@ public partial class CustomRP: RenderPipeline
     {
         foreach (var cam in cameras)
         {
-            renderer.Render(renderContext, cam, openHDR, this.useDynamicBatch, this.useGPUInstance, useLightsPerObject, shadowSettings, this.postFXSettings);       
+            renderer.Render(renderContext, cam, openHDR, this.useDynamicBatch, this.useGPUInstance, useLightsPerObject, shadowSettings, this.postFXSettings, colorLUTResolution);       
         }
     }
 }
