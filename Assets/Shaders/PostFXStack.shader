@@ -84,7 +84,7 @@
         
         Pass
         {
-            Name "ToneMapping None"
+            Name "ColorGrading ToneMapping None"
             HLSLPROGRAM
                 #pragma target 3.5
                 #pragma vertex DefaultPassVertex
@@ -94,7 +94,7 @@
         
         Pass
         {
-            Name "ToneMapping Neutral"
+            Name "ColorGrading ToneMapping Neutral"
             HLSLPROGRAM
                 #pragma target 3.5
                 #pragma vertex DefaultPassVertex
@@ -104,7 +104,7 @@
         
         Pass
         {
-            Name "ToneMapping Reinhard"
+            Name "ColorGrading ToneMapping Reinhard"
             HLSLPROGRAM
                 #pragma target 3.5
                 #pragma vertex DefaultPassVertex
@@ -114,7 +114,7 @@
         
         Pass
         {
-            Name "ToneMapping ACES"
+            Name "ColorGrading ToneMapping ACES"
             HLSLPROGRAM
                 #pragma target 3.5
                 #pragma vertex DefaultPassVertex

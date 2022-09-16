@@ -255,8 +255,6 @@ public partial class PostFXStack
     
     void DoToneMapping(int sourceID)
     {
-        buffer.BeginSample("ToneMapping");
-        
         PostFXSettings.ToneMappingSettings.Mode mode = settings.ToneMapping.mode;
         Pass pass =  Pass.ToneMappingNone + (int)mode;
         
@@ -264,7 +262,10 @@ public partial class PostFXStack
             colorGradingLUTInLogCID, useHDR && pass != Pass.ToneMappingNone ? 1f : 0f
         );
         
+        buffer.BeginSample("ColorGradingLUT");
+        //BakeColorLUT
         Draw(sourceID, colorGradingLUTID, pass);
+        buffer.EndSample("ColorGradingLUT");
         
         int lutHeight = colorLUTResolution;
         int lutWidth = lutHeight * lutHeight;
@@ -272,6 +273,8 @@ public partial class PostFXStack
                 1f / lutWidth, 1f / lutHeight, lutHeight - 1f
             )
         );
+        
+        buffer.BeginSample("ToneMapping");
         
         Draw(sourceID, BuiltinRenderTextureType.CameraTarget, Pass.Final);
         

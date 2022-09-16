@@ -39,7 +39,7 @@ public class PostFXSettings : ScriptableObject
 
     public ToneMappingSettings ToneMapping => toneMapping;
 
-    //Color Grading
+    //Color Adjustment
     [SerializeField] 
     private ColorAdjustmentsSettings colorAdjustments = new ColorAdjustmentsSettings
     {
@@ -48,11 +48,13 @@ public class PostFXSettings : ScriptableObject
 
     public ColorAdjustmentsSettings ColorAdjustments => colorAdjustments;
 
+    //White Balance
     [SerializeField]
     private WhiteBalanceSettings whiteBalance = default;
 
     public WhiteBalanceSettings WhiteBlance => whiteBalance;
 
+    //SplitToning
     [SerializeField]
     private SplitToningSettings splitToning = new SplitToningSettings
     {
@@ -62,6 +64,7 @@ public class PostFXSettings : ScriptableObject
 
     public SplitToningSettings SplitToning => splitToning;
 
+    //ChannelMixer
     [SerializeField]
     private ChannelMixerSettings channelMixer = new ChannelMixerSettings
     {
@@ -72,6 +75,7 @@ public class PostFXSettings : ScriptableObject
 
     public ChannelMixerSettings ChannelMixer => channelMixer;
 
+    //ShadowMidtonesHighlights
     [SerializeField]
     private ShadowMidtonesHighlightsSettings shadowsMidtonesHighlights = new ShadowMidtonesHighlightsSettings
     {

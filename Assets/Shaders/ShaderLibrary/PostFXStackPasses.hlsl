@@ -182,6 +182,9 @@ float3 ColorGradingPostExposure(float3 color)
     return color * _ColorAdjustments.x;
 }
 
+//白平衡
+//转换到LMS然后进行相乘
+//LMS是人眼三种感光锥类型
 float3 ColorGradingWhiteBalance(float3 color)
 {
     color = LinearToLMS(color);
@@ -189,8 +192,10 @@ float3 ColorGradingWhiteBalance(float3 color)
     return LMSToLinear(color);
 }
 
+//对比度  (color - 中间灰度) * 对比度 + 中间灰度
 float3 ColorGradingContrast(float3 color, bool useACES)
 {
+    //转到合适的空间再进行对比度矫正 效果会好些
     color = useACES ? ACES_to_ACEScc(unity_to_ACES(color)) :  LinearToLogC(color);
     color =  (color - ACEScc_MIDGRAY) * _ColorAdjustments.y + ACEScc_MIDGRAY;
     return useACES ? ACES_to_ACEScg(ACEScc_to_ACES(color)) :  LogCToLinear(color);
@@ -201,6 +206,8 @@ float3 ColorGradingColorFilter(float3 color)
     return color * _ColorFilter.rgb;
 }
 
+//色相偏移
+//先转换到HSV 然后改变H的值
 float3 ColorGradingHueShift(float3 color)
 {
     color = RgbToHsv(color);
@@ -209,12 +216,16 @@ float3 ColorGradingHueShift(float3 color)
     return HsvToRgb(color);
 }
 
+//饱和度
+//(color - 亮度) * 饱和度 + 亮度
 float3 ColorGradingSaturation(float3 color, bool useACES)
 {
     float luminance = Luminance(color, useACES);
     return (color - luminance) * _ColorAdjustments.w + luminance;
 }
 
+//色调分离
+//用于分离图像的阴影和高光，一般阴影推向冷蓝色，高光推向暖橙色
 float3 ColorGradingSplitToning(float3 color, bool useACES)
 {
     color = PositivePow(color, 1.0/2.2);
@@ -226,11 +237,14 @@ float3 ColorGradingSplitToning(float3 color, bool useACES)
     return PositivePow(color, 2.2);
 }
 
+//通道混合
+//通过RGB权重产生新的颜色值
 float3 ColorGradingChannelMixer(float3 color)
 {
     return mul(float3x3(_ChannelMixerRed.rgb, _ChannelMixerGreen.rgb, _ChannelMixerBlue.rgb), color);
 }
 
+//另一种色调分离
 float3 ColorGradingShadowsMidtonesHighlights(float3 color, bool useACES)
 {
     float luminance = Luminance(color, useACES);
@@ -245,17 +259,30 @@ float3 ColorGradingShadowsMidtonesHighlights(float3 color, bool useACES)
 float3 ColorGrading(float3 color, bool useACES = false)
 {
     //color = min(color, 60.0);
+    
+    //后曝光  pow(2, x) 非线性提高整体颜色亮度
     color = ColorGradingPostExposure(color);
+    //白平衡 LMS
     color = ColorGradingWhiteBalance(color);
+    //对比度 
     color = ColorGradingContrast(color, useACES);
+    //颜色滤镜 直接乘一个颜色
     color = ColorGradingColorFilter(color);
+    //对比度可能会产生负值
     color = max(color, 0.0);
+    //色调分离
     color = ColorGradingSplitToning(color, useACES);
+    //通道混合
     color = ColorGradingChannelMixer(color);
+    //通道混合可能产生负值
     color = max(color, 0.0);
     color = ColorGradingShadowsMidtonesHighlights(color, useACES);
+    //色相偏移
     color = ColorGradingHueShift(color);
+    //饱和度
     color = ColorGradingSaturation(color, useACES);
+    //饱和度可能产生负值
+    color = max(color, 0.0);
     return max(useACES ? ACEScg_to_ACES(color) : color, 0.0);
 }
 
