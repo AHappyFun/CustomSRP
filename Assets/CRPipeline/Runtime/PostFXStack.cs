@@ -21,6 +21,8 @@ public partial class PostFXStack
 
     public bool IsActive => settings != null;
 
+    private CameraSettings.FinalBlendMode finalBlendMode;
+
     enum Pass
     {
         BloomHorizontal,
@@ -46,6 +48,10 @@ public partial class PostFXStack
             Shader.PropertyToID("_BloomPyramid" + i);
         }
     }
+
+    private int finalSrcBlendID = Shader.PropertyToID("_FinalSrcBlend");
+    private int finalDstBlendID = Shader.PropertyToID("_FinalDstBlend");
+    
     
     //---bloom---------
     private int bloomBicubicUpsamlingID = Shader.PropertyToID("_BloomBicubicUpsampling");
@@ -275,19 +281,21 @@ public partial class PostFXStack
         );
         
         buffer.BeginSample("ToneMapping");
-        
-        Draw(sourceID, BuiltinRenderTextureType.CameraTarget, Pass.Final);
-        
+        //Draw(sourceID, BuiltinRenderTextureType.CameraTarget, Pass.Final);
+        DrawFinal(sourceID);
         buffer.EndSample("ToneMapping");
+        
+        buffer.ReleaseTemporaryRT(colorGradingLUTID);
     }
 
-    public void Setup(ScriptableRenderContext context, Camera camera, PostFXSettings settings, bool useHDR, int colorLUTResolution)
+    public void Setup(ScriptableRenderContext context, Camera camera, PostFXSettings settings, bool useHDR, int colorLUTResolution, CameraSettings.FinalBlendMode finalBlendMode)
     {
         this.useHDR = useHDR;
         this.context = context;
         this.camera = camera;
         this.colorLUTResolution = colorLUTResolution;
         this.settings = camera.cameraType <= CameraType.SceneView ? settings : null;
+        this.finalBlendMode = finalBlendMode;
         ApplySceneViewState();
     }
 
@@ -312,6 +320,22 @@ public partial class PostFXStack
         buffer.SetGlobalTexture(fxSourceID, from);
         buffer.SetRenderTarget(to, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
         buffer.DrawProcedural(Matrix4x4.identity, settings.Mat, (int)pass, MeshTopology.Triangles, 3);
+    }
+
+    void DrawFinal(RenderTargetIdentifier from)
+    {
+        
+        buffer.SetGlobalFloat(finalSrcBlendID, (float)finalBlendMode.source);
+        buffer.SetGlobalFloat(finalDstBlendID, (float)finalBlendMode.destination);
+        
+        buffer.SetGlobalTexture(fxSourceID, from);
+        buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget, 
+            finalBlendMode.destination == BlendMode.Zero ? RenderBufferLoadAction.DontCare : RenderBufferLoadAction.Load
+            , RenderBufferStoreAction.Store);
+        
+        buffer.SetViewport(camera.pixelRect);
+        
+        buffer.DrawProcedural(Matrix4x4.identity, settings.Mat, (int)Pass.Final, MeshTopology.Triangles, 3);
     }
 }
 

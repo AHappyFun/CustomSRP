@@ -40,7 +40,7 @@ half4 unlitFrag(Varyings input) :SV_TARGET
 	 clip(finalColor.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlphaCutoff));
 #endif
 
-	 return finalColor ;
+	 return float4(finalColor.rgb, GetFinalAlpha(finalColor.a)) ;
 
  }
 

@@ -34,7 +34,7 @@
     	
 		_AlphaCutoff("Alpha CutOff", Range(0,1)) = 0
 
-		[Toggle(_CLIPPING)] _Clipping("AlphaTest", float) = 0
+        [Toggle(_CLIPPING)] _Clipping("AlphaTest", float) = 0
     	[KeywordEnum(On, Clip, Dither, Off)] _Shadows("Shadows", float) = 0
     	[Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows("Receive Shadows", float) = 1
 		[Toggle(_PREMULTIPY_ALPHA)] _PremulAlpha("Pre Mul Alpha", float) = 0
@@ -59,7 +59,7 @@
 			Tags{
 				"LightMode" = "CustomLit"
 			}
-			Blend [_SrcBlend] [_DstBlend]
+			Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
 			ZWrite [_ZWrite]
 
 			HLSLPROGRAM

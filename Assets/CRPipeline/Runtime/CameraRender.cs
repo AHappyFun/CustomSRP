@@ -15,6 +15,8 @@ public class CameraRenderer
     
     PostFXStack postFXStack = new PostFXStack();
 
+    static CameraSettings defaultCameraSettings = new CameraSettings();
+
     private bool useHDR;
 
     static ShaderTagId unlitShaderTagID = new ShaderTagId("SRPDefaultUnlit"); //SRP默认Tag
@@ -44,6 +46,15 @@ public class CameraRenderer
         context = ctx;
         camera = cam;
 
+        var crpCamera = cam.GetComponent<CustomRenderPipelineCamera>();
+        CameraSettings cameraSettings = crpCamera ? crpCamera.Settings : defaultCameraSettings;
+
+        if (cameraSettings.overridePostFX)
+        {
+            if(cameraSettings.postFXSettings != null)
+                postFXSettings = cameraSettings.postFXSettings;
+        }
+        
 #if UNITY_EDITOR
         PrepareCameraBuffer();
 #endif
@@ -61,9 +72,9 @@ public class CameraRenderer
         commandBuffer.BeginSample(sampleName);
         ExecuteBuffer();
         //设置灯光数据、绘制ShadowMap
-        lighting.Setup(context, cullingResults, shadowSetting, useLightsPerObject);
+        lighting.Setup(context, cullingResults, shadowSetting, useLightsPerObject, cameraSettings.maskLights ? cameraSettings.renderingLayerMask : -1);
         
-        postFXStack.Setup(context, cam, postFXSettings, useHDR, colorLUTResolution);
+        postFXStack.Setup(context, cam, postFXSettings, useHDR, colorLUTResolution, cameraSettings.finalBlendMode);
         
         commandBuffer.EndSample(sampleName);
 
@@ -71,7 +82,7 @@ public class CameraRenderer
         Setup();
 
         //画可见几何体
-        DrawVisableGeometry(useDynamicBatch, useGPUIInstance, useLightsPerObject);
+        DrawVisableGeometry(useDynamicBatch, useGPUIInstance, useLightsPerObject, cameraSettings.renderingLayerMask);
 
         //画错误shader
         DrawUnsupportShaders();
@@ -130,7 +141,7 @@ public class CameraRenderer
     /// <summary>
     /// 画几何体
     /// </summary>
-    void DrawVisableGeometry(bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject)
+    void DrawVisableGeometry(bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject, int renderingLayerMask)
     {
 
         PerObjectData lightsPerObjectsFlags =
@@ -158,7 +169,7 @@ public class CameraRenderer
         };
         drawingSettings.SetShaderPassName(1, litShaderTagID);
 
-        FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
+        FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.opaque, renderingLayerMask : (uint)renderingLayerMask);
         context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
 
         //天空盒

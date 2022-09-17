@@ -93,6 +93,7 @@ half4 litFrag(Varyings input) :SV_TARGET
 	  surf.occlusion = GetOcclusion(cfg);
 	  surf.fresnelStrength = GetFresnel(cfg);
 	  surf.dither = InterleavedGradientNoise(input.pos.xy, 0);
+	  surf.renderingLayerMask = asuint(unity_RenderingLayer.x);
 
 	  //
 	  #if defined(_CLIPPING)
@@ -111,7 +112,7 @@ half4 litFrag(Varyings input) :SV_TARGET
 
 	  color += GetEmission(cfg);
 
-      return half4(color, surf.alpha);
+      return half4(color, GetFinalAlpha(surf.alpha));
  }
 
 #endif

@@ -15,8 +15,8 @@ TagManager:
   - 
   - PostProcessing
   - ErrorShader
-  - 
-  - 
+  - static
+  - dynamic
   - 
   - 
   - 

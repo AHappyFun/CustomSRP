@@ -7,7 +7,7 @@ using UnityEngine.Rendering;
 /// 继承RenderPipelineAsset，是ScriptObject类型，相当于把管线的配置给序列化保存了
 /// </summary>
 [CreateAssetMenu(menuName = "Rendering/我的自定义SRP")]
-public class CustomRPAsset : RenderPipelineAsset
+public partial class CustomRPAsset : RenderPipelineAsset
 {
     [SerializeField]
     bool UseDynamicBatching = true, UseGPUInstancing = true, UseSRPBatcher = true, UseLightsPerObject = true;
@@ -38,4 +38,24 @@ public class CustomRPAsset : RenderPipelineAsset
     }
 
     
+}
+
+partial class CustomRPAsset
+{
+    #if UNITY_EDITOR
+
+    private static string[] renderingLayerNames;
+
+    static CustomRPAsset()
+    {
+        renderingLayerNames = new string[31];
+        for (int i = 0; i < renderingLayerNames.Length; i++)
+        {
+            renderingLayerNames[i] = "Layer " + (i + 1);
+        }
+    }
+
+    public override string[] renderingLayerMaskNames => renderingLayerNames;
+
+#endif
 }
