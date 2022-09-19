@@ -21,8 +21,14 @@ float2 TransformBaseUV(float2 baseUV)
 float4 GetBase(InputConfig cfg)
 {
     float4 baseTex = SAMPLE_TEXTURE2D(_BaseTexture, sampler_BaseTexture, cfg.baseUV);
+
+    if(cfg.flipbookBlending)
+    {
+        baseTex = lerp(baseTex, SAMPLE_TEXTURE2D(_BaseTexture, sampler_BaseTexture, cfg.flipbookUVB.xy), cfg.flipbookUVB.z);     
+    }
+    
     float4 albedo = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
-    return baseTex * albedo;
+    return baseTex * albedo * cfg.color;
 }
 
 float GetCutOff()

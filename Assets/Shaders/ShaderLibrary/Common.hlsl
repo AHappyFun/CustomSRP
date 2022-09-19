@@ -62,8 +62,11 @@ float3 NormalTangentToWorld(float3 normalTS, float3 normalWS, float4 tangentWS)
 
 struct InputConfig
 {
+	float4 color;
 	float2 baseUV;
 	float2 detailUV;
+	float3 flipbookUVB;
+	bool flipbookBlending;
 	bool useMask;
 	bool useDetail;
 };
@@ -75,6 +78,9 @@ InputConfig GetInputConfig(float2 baseUV, float2 detailUV = 0.0)
 	c.detailUV = detailUV;
 	c.useMask = false;
 	c.useDetail = false;
+	c.color = 1.0;
+	c.flipbookBlending = false;
+	c.flipbookUVB = 0.0;
 #if defined(_MASK_MAP)
 	c.useMask = true;
 #endif
