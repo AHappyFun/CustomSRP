@@ -5,14 +5,24 @@
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
 #include "UnityInput.hlsl"
 
+SAMPLER(sampler_linear_clamp);
+SAMPLER(samlper_point_clamp);
 
-//float3 TransformObjectToWorld(float3 objPos) {
-//	return mul(unity_ObjectToWorld, float4(objPos, 1.0)).xyz;
-//}
-//
-//float4 TransformWorldToHClip(float3 worldPos) {
-//	return mul(unity_MatrixVP, float4(worldPos, 1.0));
-//}
+bool IsOrthographicCamera()
+{
+	return unity_OrthoParams.w;
+}
+
+float OrthographicDepthBufferToLinear(float rawDepth)
+{
+#if UNITY_REVERSED_Z
+	rawDepth = 1.0 - rawDepth;
+#endif
+	return (_ProjectionParams.z - _ProjectionParams.y) * rawDepth + _ProjectionParams.y;
+}
+
+#include "Fragment.hlsl"
+
 
 float Square(float v) {
 	return v * v;
@@ -22,10 +32,10 @@ float DistanceSquared(float3 pA, float3 pB) {
 	return dot(pA - pB, pA - pB);
 }
 
-void ClipLOD(float2 positionCS, float fade)
+void ClipLOD(Fragment fragment, float fade)
 {
 	#if defined(LOD_FADE_CROSSFADE)
-		float dither = InterleavedGradientNoise(positionCS.xy, 0);
+		float dither = InterleavedGradientNoise(fragment.positionSS, 0);
 		clip(fade + (fade < 0.0 ? dither : -dither));
 	#endif
 }
@@ -43,6 +53,8 @@ void ClipLOD(float2 positionCS, float fade)
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
+
+
 
 float3 DecodeNormal(float4 sample, float scale)
 {
@@ -69,9 +81,11 @@ struct InputConfig
 	bool flipbookBlending;
 	bool useMask;
 	bool useDetail;
+	Fragment fragment;
+	bool nearFade;
 };
 
-InputConfig GetInputConfig(float2 baseUV, float2 detailUV = 0.0)
+InputConfig GetInputConfig(float4 positionSS, float2 baseUV, float2 detailUV = 0.0)
 {
 	InputConfig c;
 	c.baseUV = baseUV;
@@ -81,6 +95,8 @@ InputConfig GetInputConfig(float2 baseUV, float2 detailUV = 0.0)
 	c.color = 1.0;
 	c.flipbookBlending = false;
 	c.flipbookUVB = 0.0;
+	c.fragment = GetFragment(positionSS);
+	c.nearFade = false;
 #if defined(_MASK_MAP)
 	c.useMask = true;
 #endif

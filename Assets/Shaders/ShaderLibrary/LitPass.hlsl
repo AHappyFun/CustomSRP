@@ -18,7 +18,7 @@ struct Attributes{
 };
 
 struct Varyings{
-	float4 pos : SV_POSITION;
+	float4 positionCS_SS : SV_POSITION;
 	float3 worldNormal: VAR_NORMAL;
 	float3 worldPos :VAR_POSITION;
 #if defined(_NORMAL_MAP)
@@ -41,7 +41,7 @@ Varyings litVert(Attributes input){
 	UNITY_TRANSFER_INSTANCE_ID(input, output);
     TRANSFER_GI_DATA(input,output);
 	
-	output.pos = TransformObjectToHClip(input.vertex.xyz);
+	output.positionCS_SS = TransformObjectToHClip(input.vertex.xyz);
 	//o.worldNormal = mul(UNITY_MATRIX_M, i.normal);  //不正确的写法
 	output.worldNormal = TransformObjectToWorldNormal(input.normal);  //正确的写法
 	output.worldPos = TransformObjectToWorld(input.vertex.xyz);
@@ -60,11 +60,14 @@ half4 litFrag(Varyings input) :SV_TARGET
 {
 	  UNITY_SETUP_INSTANCE_ID(input);
 
-	  ClipLOD(input.pos.xy, unity_LODFade.x);
 	
 	  input.worldNormal = normalize(input.worldNormal);
 
-	  InputConfig cfg = GetInputConfig(input.uv, 0.0);
+	  InputConfig cfg = GetInputConfig(input.positionCS_SS, input.uv, 0.0);
+
+	  //return float4(cfg.fragment.depth.xxx / 20.0, 1.0);
+	
+	  ClipLOD(cfg.fragment, unity_LODFade.x);
 	
 #if defined(_DETAIL_MAP)
 	  cfg.detailUV = input.detailUV;
@@ -92,7 +95,7 @@ half4 litFrag(Varyings input) :SV_TARGET
 	  surf.smoothness = GetSmoothness(cfg);
 	  surf.occlusion = GetOcclusion(cfg);
 	  surf.fresnelStrength = GetFresnel(cfg);
-	  surf.dither = InterleavedGradientNoise(input.pos.xy, 0);
+	  surf.dither = InterleavedGradientNoise(cfg.fragment.positionSS, 0);
 	  surf.renderingLayerMask = asuint(unity_RenderingLayer.x);
 
 	  //

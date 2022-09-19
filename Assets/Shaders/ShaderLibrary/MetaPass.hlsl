@@ -17,7 +17,7 @@ struct Attributes{
 };
 
 struct Varyings{
-    float4 pos : SV_POSITION;
+    float4 positionCS_SS : SV_POSITION;
     float2 uv : VAR_BASE_UV;
 };
 
@@ -28,14 +28,14 @@ Varyings MetaPassVert(Attributes input)
     input.vertex.xy = input.lightMapUV * unity_LightmapST.xy + unity_LightmapST.zw;
     input.vertex.z = input.vertex.z > 0.0 ? REAL_MIN : 0.0;
      
-    output.pos = TransformWorldToHClip(input.vertex);
+    output.positionCS_SS = TransformWorldToHClip(input.vertex);
     output.uv = TransformBaseUV(input.uv);
     return output;
 }
 
 float4 MetaPassFrag(Varyings input) : SV_TARGET
 {
-    InputConfig cfg = GetInputConfig(input.uv, 0.0);
+    InputConfig cfg = GetInputConfig(input.positionCS_SS, input.uv, 0.0);
     float4 base = GetBase(cfg);
     
     Surface surf;

@@ -16,7 +16,7 @@ struct Attributes {
 };
 
 struct Varyings {
-	float4 positionCS : SV_POSITION;
+	float4 positionCS_SS : SV_POSITION;
 #if defined(_VERTEX_COLORS)
 	float4 color : VAR_COLOR;
 #endif
@@ -33,7 +33,7 @@ Varyings unlitVert(Attributes input){
 	UNITY_SETUP_INSTANCE_ID(input);
 	UNITY_TRANSFER_INSTANCE_ID(input, output);
 	float3 worldPos = TransformObjectToWorld(input.positionOS);
-	output.positionCS = TransformWorldToHClip(worldPos);
+	output.positionCS_SS = TransformWorldToHClip(worldPos);
 
 	output.uv0.xy = TransformBaseUV(input.uv0.xy);
 #if defined(_FLIPBOOK_BLENDING)
@@ -52,9 +52,12 @@ half4 unlitFrag(Varyings input) :SV_TARGET
 {
 	 UNITY_SETUP_INSTANCE_ID(input);
 
-	 ClipLOD(input.positionCS.xy, unity_LODFade.x);
+	 InputConfig cfg = GetInputConfig(input.positionCS_SS, 0.0);
 
-	 InputConfig cfg = GetInputConfig(input.uv0, 0.0);
+	 //return float4(cfg.fragment.depth.xxx / 20.0, 1.0);
+	
+	 ClipLOD(cfg.fragment, unity_LODFade.x);
+
 #if defined(_VERTEX_COLORS)
 	 cfg.color = input.color;
 #endif
@@ -64,6 +67,9 @@ half4 unlitFrag(Varyings input) :SV_TARGET
 	 cfg.flipbookBlending = true;
 #endif
 
+#if defined(_NEAR_FADE)
+	cfg.nearFade = true;
+#endif
 	
 	 half4 finalColor = GetBase(cfg);
 #if defined(_CLIPPING)

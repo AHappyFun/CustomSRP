@@ -8,7 +8,9 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseTexture_ST)
     UNITY_DEFINE_INSTANCED_PROP(float, _AlphaCutoff)
-    UNITY_DEFINE_INSTANCED_PROP(float, _ZWrite)
+    UNITY_DEFINE_INSTANCED_PROP(float, _ZWrite)  
+    UNITY_DEFINE_INSTANCED_PROP(float, _NearFadeDistance)
+    UNITY_DEFINE_INSTANCED_PROP(float, _NearFadeRange)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 
@@ -25,6 +27,12 @@ float4 GetBase(InputConfig cfg)
     if(cfg.flipbookBlending)
     {
         baseTex = lerp(baseTex, SAMPLE_TEXTURE2D(_BaseTexture, sampler_BaseTexture, cfg.flipbookUVB.xy), cfg.flipbookUVB.z);     
+    }
+    if(cfg.nearFade)
+    {
+        float nearAtten = (cfg.fragment.depth - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NearFadeDistance)) /
+            UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NearFadeRange);
+        baseTex.a *= saturate(nearAtten);
     }
     
     float4 albedo = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);

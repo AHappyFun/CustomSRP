@@ -7,6 +7,10 @@
     	[Toggle(_FLIPBOOK_BLENDING)] _FlipbookBlending("Flipbook Blending", float) = 0
 		_BaseTexture("Base Texture", 2D) = "white"{}
 		_AlphaCutoff("Alpha CutOff", Range(0,1)) = 0
+    	
+    	[Toggle(_NEAR_FADE)] _NearFade("Near Fade", float) = 0
+    	_NearFadeDistance("Near Fade Distance", Range(0.0, 10.0)) = 1
+    	_NearFadeRange("Near Fade Range", Range(0.01, 10.0)) = 1
 
 		[Toggle(_CLIPPING)] _Clipping("AlphaTest", float) = 0
     	[KeywordEnum(On, Clip, Dither, Off)] _Shadows("Shadows", float) = 0
@@ -35,6 +39,7 @@
 			#pragma shader_feature _CLIPPING
 			#pragma shader_feature _VERTEX_COLORS
 			#pragma shader_feature _FLIPBOOK_BLENDING
+			#pragma shader_feature _NEAR_FADE
 			#include "ShaderLibrary/UnlitPass.hlsl"
 
 			#pragma multi_compile_instancing
