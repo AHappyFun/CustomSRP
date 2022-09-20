@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 using UnityEngine.Rendering;
 
 [Serializable]
@@ -26,6 +27,23 @@ public class CameraSettings
         source = BlendMode.One,
         destination = BlendMode.Zero
     };
+
+    public enum RenderScaleMode
+    {
+        Inherit, Multiply, Override
+    }
+
+    public RenderScaleMode renderScaleMode = RenderScaleMode.Inherit;
+
+    [Range(0.1f, 2f)]
+    public float renderScale = 1f;
+
+    public float GetRenderScale(float scale)
+    {
+        return  renderScaleMode == RenderScaleMode.Inherit ? scale :
+                renderScaleMode == RenderScaleMode.Override ? renderScale :
+                scale * renderScale;
+    }
 }
 
 [Serializable]
@@ -36,4 +54,16 @@ public struct CameraBufferSettings
     public bool copyColor, copyColorReflections;
     
     public bool copyDepth, copyDepthReflections;
+
+    [Range(0.1f, 2f)]
+    public float renderScale;
+    
+    //public bool bicubicRescaling;
+
+    public enum BicubicRescalingMode
+    {
+        Off, UpOnly, UpAndDown
+    }
+
+    public BicubicRescalingMode bicubicRescalingMode;
 }

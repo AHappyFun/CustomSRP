@@ -15,6 +15,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _SoftParticlesDistance)
     UNITY_DEFINE_INSTANCED_PROP(float, _SoftParticlesRange)
     UNITY_DEFINE_INSTANCED_PROP(float, _DistortionStrength)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DistortionBlend)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 
@@ -79,6 +80,11 @@ float GetFinalAlpha(float alpha)
     return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _ZWrite) ? 1.0 : alpha;
 }
 
+float GetDistortionBlend(InputConfig cfg)
+{
+    return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _DistortionBlend);
+}
+
 float2 GetDistortion(InputConfig cfg)
 {
 
@@ -93,5 +99,7 @@ float2 GetDistortion(InputConfig cfg)
     }
     return DecodeNormal(rawMap, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _DistortionStrength)).xy;
 }
+
+
 
 #endif

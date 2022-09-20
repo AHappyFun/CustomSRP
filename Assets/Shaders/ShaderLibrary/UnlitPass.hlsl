@@ -83,7 +83,11 @@ half4 unlitFrag(Varyings input) :SV_TARGET
 
 #if defined(_DISTORTION)
 	float2 distortion = GetDistortion(cfg) * finalColor.a;
-	finalColor.rgb = GetBufferColor(cfg.fragment, distortion).rgb;
+	finalColor.rgb = lerp(GetBufferColor(cfg.fragment, distortion).rgb,
+        finalColor.rgb,
+        saturate(finalColor.a - GetDistortionBlend(cfg))
+    );
+	
 #endif
 
 	 return float4(finalColor.rgb, GetFinalAlpha(finalColor.a)) ;

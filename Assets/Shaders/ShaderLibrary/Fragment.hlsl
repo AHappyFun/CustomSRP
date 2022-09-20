@@ -4,6 +4,8 @@
 TEXTURE2D(_CameraColorTexture);
 TEXTURE2D(_CameraDepthTexture);
 
+float4 _CameraBufferSize;
+
 struct Fragment
 {
     float2 positionSS;
@@ -16,7 +18,7 @@ Fragment GetFragment(float4 positionSS)
 {
     Fragment f;
     f.positionSS = positionSS.xy;
-    f.screenUV = f.positionSS / _ScreenParams.xy; // Clip空间的直接除以 screen范围-1~1
+    f.screenUV = f.positionSS * _CameraBufferSize.xy; // Clip空间的直接除以 screen范围-1~1
     f.depth = IsOrthographicCamera() ? OrthographicDepthBufferToLinear(positionSS.z) : positionSS.w;
     f.bufferDepth = SAMPLE_TEXTURE2D_LOD(_CameraDepthTexture, samlper_point_clamp, f.screenUV, 0).r;
     f.bufferDepth = IsOrthographicCamera() ? OrthographicDepthBufferToLinear(f.bufferDepth) : LinearEyeDepth(f.bufferDepth, _ZBufferParams);

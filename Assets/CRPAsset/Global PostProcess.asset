@@ -15,6 +15,7 @@ MonoBehaviour:
   shader: {fileID: 4800000, guid: bdb578581aee487a997fb2602fa678e2, type: 3}
   IsActive: 1
   bloomSettings:
+    ignoreRenderScale: 0
     MaxIterations: 4
     downScaleLimit: 2
     bicubicUpsampling: 1

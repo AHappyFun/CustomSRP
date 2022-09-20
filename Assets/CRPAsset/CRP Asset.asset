@@ -14,14 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   UseDynamicBatching: 0
   UseGPUInstancing: 1
-  UseSRPBatcher: 0
+  UseSRPBatcher: 1
   UseLightsPerObject: 1
   cameraBufferSettings:
     allowHDR: 1
     copyColor: 1
-    copyColorReflections: 1
+    copyColorReflections: 0
     copyDepth: 1
-    copyDepthReflections: 1
+    copyDepthReflections: 0
+    renderScale: 1.155
+    bicubicRescalingMode: 2
   shadowSetting:
     maxDistance: 71
     distanceFade: 0.133

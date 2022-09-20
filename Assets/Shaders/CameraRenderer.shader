@@ -14,6 +14,9 @@
         Pass
         {
             Name "Copy"
+            
+            Blend [_CameraSrcBlend] [_CameraDstBlend]
+            
             HLSLPROGRAM
                 #pragma target 3.5
                 #pragma vertex DefaultPassVertex

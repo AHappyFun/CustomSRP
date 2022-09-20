@@ -19,6 +19,7 @@
     	[Toggle(_DISTORTION)] _Distortion("Distortion", float) = 0
     	[NoScaleOffset] _DistortionTexture("Distortion Vector", 2D) = "bump" {}
     	_DistortionStrength("Distortion Strength", Range(0.0, 0.2)) = 0.1
+    	_DistortionBlend("Distortion Blend", Range(0.0, 1.0)) = 1
 
 		[Toggle(_CLIPPING)] _Clipping("AlphaTest", float) = 0
     	[KeywordEnum(On, Clip, Dither, Off)] _Shadows("Shadows", float) = 0

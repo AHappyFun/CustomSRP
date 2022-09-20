@@ -395,8 +395,20 @@ Varyings DefaultPassVertex(uint vertexID : SV_VertexID)
 
 float4 CopyPassFragment(Varyings input) : SV_TARGET
 {
-    return GetSource(input.screenUV);
-    //return float4(input.screenUV, 0.0, 1.0);   
+    return GetSource(input.screenUV); 
+}
+
+bool _CopyBicubic;
+float4 FinalPassFragmentRescale(Varyings input) : SV_TARGET
+{
+    if(_CopyBicubic)
+    {
+        return GetSourceBicubic(input.screenUV);
+    }
+    else
+    {
+        return GetSource(input.screenUV);
+    }
 }
 
 #endif

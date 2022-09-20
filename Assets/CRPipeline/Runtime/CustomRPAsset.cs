@@ -15,7 +15,8 @@ public partial class CustomRPAsset : RenderPipelineAsset
     [SerializeField]
     private CameraBufferSettings cameraBufferSettings = new CameraBufferSettings
     {
-        allowHDR = true
+        allowHDR = true,
+        renderScale = 1f
     };
 
     [SerializeField]
