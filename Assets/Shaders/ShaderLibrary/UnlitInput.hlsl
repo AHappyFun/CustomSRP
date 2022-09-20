@@ -2,6 +2,7 @@
 #define CUSTOM_UNLIT_INPUT_INCLUDED
 
 TEXTURE2D(_BaseTexture);   //纹理和采样器不可以实例
+TEXTURE2D(_DistortionTexture);
 SAMPLER(sampler_BaseTexture);
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
@@ -11,6 +12,9 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _ZWrite)  
     UNITY_DEFINE_INSTANCED_PROP(float, _NearFadeDistance)
     UNITY_DEFINE_INSTANCED_PROP(float, _NearFadeRange)
+    UNITY_DEFINE_INSTANCED_PROP(float, _SoftParticlesDistance)
+    UNITY_DEFINE_INSTANCED_PROP(float, _SoftParticlesRange)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DistortionStrength)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 
@@ -32,6 +36,13 @@ float4 GetBase(InputConfig cfg)
     {
         float nearAtten = (cfg.fragment.depth - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NearFadeDistance)) /
             UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _NearFadeRange);
+        baseTex.a *= saturate(nearAtten);
+    }
+    if(cfg.softParticles)
+    {
+        float depthDelta = cfg.fragment.bufferDepth - cfg.fragment.depth;
+        float nearAtten = (depthDelta - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SoftParticlesDistance)) /
+            UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _SoftParticlesRange);
         baseTex.a *= saturate(nearAtten);
     }
     
@@ -66,6 +77,21 @@ float GetFresnel(InputConfig cfg)
 float GetFinalAlpha(float alpha)
 {
     return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _ZWrite) ? 1.0 : alpha;
+}
+
+float2 GetDistortion(InputConfig cfg)
+{
+
+    float4 rawMap = SAMPLE_TEXTURE2D(_DistortionTexture, sampler_BaseTexture, cfg.baseUV);
+      
+    if(cfg.flipbookBlending)
+    {
+        rawMap = lerp(rawMap,
+            SAMPLE_TEXTURE2D(_DistortionTexture, sampler_BaseTexture, cfg.flipbookUVB.xy),
+            cfg.flipbookUVB.z
+        );
+    }
+    return DecodeNormal(rawMap, UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _DistortionStrength)).xy;
 }
 
 #endif

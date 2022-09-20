@@ -1,4 +1,4 @@
-﻿Shader "CRP/PostProcess/PostFXStack"
+﻿Shader "CustomRP/PostProcess/PostFXStack"
 {
     
     SubShader

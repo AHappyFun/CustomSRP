@@ -54,7 +54,8 @@ half4 unlitFrag(Varyings input) :SV_TARGET
 
 	 InputConfig cfg = GetInputConfig(input.positionCS_SS, 0.0);
 
-	 //return float4(cfg.fragment.depth.xxx / 20.0, 1.0);
+	//return float4(cfg.fragment.bufferDepth.xxx / 20.0, 1.0);
+	//return GetBufferColor(cfg.fragment, 0.05f);
 	
 	 ClipLOD(cfg.fragment, unity_LODFade.x);
 
@@ -70,10 +71,19 @@ half4 unlitFrag(Varyings input) :SV_TARGET
 #if defined(_NEAR_FADE)
 	cfg.nearFade = true;
 #endif
+
+#if defined(_SOFT_PARTICLES)
+	cfg.softParticles = true;
+#endif
 	
 	 half4 finalColor = GetBase(cfg);
 #if defined(_CLIPPING)
 	 clip(finalColor.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlphaCutoff));
+#endif
+
+#if defined(_DISTORTION)
+	float2 distortion = GetDistortion(cfg) * finalColor.a;
+	finalColor.rgb = GetBufferColor(cfg.fragment, distortion).rgb;
 #endif
 
 	 return float4(finalColor.rgb, GetFinalAlpha(finalColor.a)) ;

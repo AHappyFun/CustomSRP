@@ -23,6 +23,11 @@ public class PostFXSettings : ScriptableObject
             return material;
         }
     }
+
+    [SerializeField]
+    private bool IsActive;
+
+    public bool Active => IsActive;
     
 
     //Bloom

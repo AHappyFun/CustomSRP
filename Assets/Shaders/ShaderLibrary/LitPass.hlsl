@@ -64,8 +64,6 @@ half4 litFrag(Varyings input) :SV_TARGET
 	  input.worldNormal = normalize(input.worldNormal);
 
 	  InputConfig cfg = GetInputConfig(input.positionCS_SS, input.uv, 0.0);
-
-	  //return float4(cfg.fragment.depth.xxx / 20.0, 1.0);
 	
 	  ClipLOD(cfg.fragment, unity_LODFade.x);
 	

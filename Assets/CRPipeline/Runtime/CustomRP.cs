@@ -15,44 +15,42 @@ public partial class CustomRP: RenderPipeline
     private ScriptableCullingParameters cullingParameters;
     private CullingResults cullResults;
 
-    bool useDynamicBatch, useGPUInstance, useLightsPerObject, openHDR;
+    bool useDynamicBatch, useGPUInstance, useLightsPerObject;
+
+    CameraBufferSettings cameraBufferSettings;
 
     ShadowSetting shadowSettings;
 
     PostFXSettings postFXSettings;
 
-    CameraRenderer renderer = new CameraRenderer();
+    CameraRenderer renderer;
 
     private int colorLUTResolution;
     
-    public CustomRP(bool openHDR, bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, bool useLightsPerObject, ShadowSetting shadowSetting, PostFXSettings postFXSettings, int colorLutResolution)
+    public CustomRP(CameraBufferSettings cameraBufferSettings, bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, bool useLightsPerObject, ShadowSetting shadowSetting, PostFXSettings postFXSettings, int colorLutResolution, Shader cameraRenderShader)
     {
         cullResults = new CullingResults();
-
-        this.openHDR = openHDR;
+        
         this.useDynamicBatch = useDynamicBatching;
         this.useGPUInstance = useGPUInstancing;
         this.shadowSettings = shadowSetting;
         this.postFXSettings = postFXSettings;
         this.useLightsPerObject = useLightsPerObject;
         this.colorLUTResolution = colorLutResolution;
+        this.cameraBufferSettings = cameraBufferSettings;
         GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
         GraphicsSettings.lightsUseLinearIntensity = true; //灯光线性空间
+        renderer = new CameraRenderer(cameraRenderShader);
 
         InitializeForEditor();
     }
-
-   //public override void Dispose(bool disposing)
-   //{
-   //    base.Dispose();
-   //}
 
     //遍历执行Camera的Render方法
     protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras)
     {
         foreach (var cam in cameras)
         {
-            renderer.Render(renderContext, cam, openHDR, this.useDynamicBatch, this.useGPUInstance, useLightsPerObject, shadowSettings, this.postFXSettings, colorLUTResolution);       
+            renderer.Render(renderContext, cam, cameraBufferSettings, this.useDynamicBatch, this.useGPUInstance, useLightsPerObject, shadowSettings, this.postFXSettings, colorLUTResolution);       
         }
     }
 }
@@ -62,6 +60,15 @@ public partial class CustomRP: RenderPipeline
 public partial class CustomRP : RenderPipeline
 {
     partial void InitializeForEditor();
+
+    partial void DisposeForEditor();
+    
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        DisposeForEditor();
+        renderer.Dispose();
+    }
 
 #if UNITY_EDITOR
 
@@ -102,6 +109,7 @@ public partial class CustomRP : RenderPipeline
                         rectLight.mode = LightMode.Baked;
                         lightData.Init(ref rectLight);
                         break;
+
                     default:
                         lightData.InitNoBake(light.GetInstanceID());
                         break;
@@ -112,11 +120,11 @@ public partial class CustomRP : RenderPipeline
             }
         };
 
-    protected override void Dispose(bool disposing)
+    partial void DisposeForEditor()
     {
-        base.Dispose(disposing);
         Lightmapping.ResetDelegate();
     }
+
 #endif
 }
 

@@ -19,7 +19,7 @@ public partial class PostFXStack
 
     private bool useHDR;
 
-    public bool IsActive => settings != null;
+    public bool IsActive => settings != null && settings.Active;
 
     private CameraSettings.FinalBlendMode finalBlendMode;
 
