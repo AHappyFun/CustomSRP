@@ -124,14 +124,14 @@
         
         Pass
         {
-            Name "FinalPass"
+            Name "ApplyColorGrading"
             
             Blend [_FinalSrcBlend] [_FinalDstBlend]
             
             HLSLPROGRAM
                 #pragma target 3.5
                 #pragma vertex DefaultPassVertex
-                #pragma fragment FinalPassFragment
+                #pragma fragment ApplyColorGradingPassFragment
             ENDHLSL
         }
         
@@ -148,6 +148,20 @@
             ENDHLSL
         }
 
+        Pass
+        {
+            Name "FXAA"
+            
+            Blend [_FinalSrcBlend] [_FinalDstBlend]
+            
+            HLSLPROGRAM
+                #pragma target 3.5
+                #pragma vertex DefaultPassVertex
+                #pragma fragment FXAAPassFragment
+                #include "ShaderLibrary/FXAAPass.hlsl"
+            ENDHLSL
+        }
+        
         Pass
         {
             Name "Copy"

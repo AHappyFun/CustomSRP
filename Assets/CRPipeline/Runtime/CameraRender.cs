@@ -138,8 +138,9 @@ public class CameraRenderer
         ExecuteBuffer();
         //设置灯光数据、绘制ShadowMap
         lighting.Setup(context, cullingResults, shadowSetting, useLightsPerObject, cameraSettings.maskLights ? cameraSettings.renderingLayerMask : -1);
-        
-        postFXStack.Setup(context, cam, bufferSize, postFXSettings, useHDR, colorLUTResolution, cameraSettings.finalBlendMode, cameraBufferSettings.bicubicRescalingMode);
+
+        cameraBufferSettings.fxaa.enabled &= cameraSettings.allowFXAA;
+        postFXStack.Setup(context, cam, bufferSize, postFXSettings, useHDR, colorLUTResolution, cameraSettings.finalBlendMode, cameraBufferSettings.bicubicRescalingMode, cameraBufferSettings.fxaa);
         
         commandBuffer.EndSample(sampleName);
 

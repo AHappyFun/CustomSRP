@@ -8,6 +8,8 @@ public class CameraSettings
     public bool overridePostFX = false;
     public PostFXSettings postFXSettings = default;
 
+    public bool allowFXAA = false;
+
     public bool CopyColor = true;
     public bool CopyDepth = true;
 
@@ -66,4 +68,12 @@ public struct CameraBufferSettings
     }
 
     public BicubicRescalingMode bicubicRescalingMode;
+
+    [Serializable]
+    public struct FXAA
+    {
+        public bool enabled;
+    }
+
+    public FXAA fxaa;
 }
