@@ -371,6 +371,14 @@ float4 ApplyColorGradingPassFragment(Varyings input) : SV_TARGET
     return color;
 }
 
+float4 ApplyColorGradingWithLumaPassFragment(Varyings input) : SV_TARGET
+{
+    float4 color = GetSource(input.screenUV);
+    color.rgb = ApplyColorGradingLUT(color);
+    color.a = sqrt(Luminance(color.rgb));
+    return color;
+}
+
 //根据VertexID得到PosCS和screenUV
 // clip 0(-1, -1)  1( -1, 3) 2(3, -1)
 // UV   0(0, 0)    1(0, 2)   2(2, 0)

@@ -10,6 +10,8 @@ public class CameraSettings
 
     public bool allowFXAA = false;
 
+    public bool keepAlpha = false;
+
     public bool CopyColor = true;
     public bool CopyDepth = true;
 
@@ -73,6 +75,29 @@ public struct CameraBufferSettings
     public struct FXAA
     {
         public bool enabled;
+
+        [Range(0.0312f, 0.0833f)]
+        public float fixedThreshold;
+        
+        // The minimum amount of local contrast required to apply algorithm.
+        //   0.333 - too little (faster)
+        //   0.250 - low quality
+        //   0.166 - default
+        //   0.125 - high quality 
+        //   0.063 - overkill (slower)
+        [Range(0.063f, 0.333f)]
+        public float relativeThreshold;
+
+        [Range(0f, 1f)]
+        public float subpixelBlending;
+        
+        public enum Quality
+        {
+            Low, Medium, High
+        }
+
+        public Quality quality;
+
     }
 
     public FXAA fxaa;

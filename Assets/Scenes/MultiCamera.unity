@@ -1089,11 +1089,17 @@ MonoBehaviour:
   settings:
     overridePostFX: 1
     postFXSettings: {fileID: 11400000, guid: a06b516ddf4ffff4587bb88b63c1da7b, type: 2}
+    allowFXAA: 0
+    keepAlpha: 0
+    CopyColor: 1
+    CopyDepth: 1
     renderingLayerMask: 1
     maskLights: 0
     finalBlendMode:
       source: 1
       destination: 0
+    renderScaleMode: 0
+    renderScale: 1
 --- !u!81 &521676991
 AudioListener:
   m_ObjectHideFlags: 0
@@ -1981,6 +1987,7 @@ GameObject:
   - component: {fileID: 932643367}
   - component: {fileID: 932643366}
   - component: {fileID: 932643365}
+  - component: {fileID: 932643368}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -2053,6 +2060,32 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &932643368
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 932643364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0267bc8241584939ba234f9bbfe69889, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  settings:
+    overridePostFX: 0
+    postFXSettings: {fileID: 0}
+    allowFXAA: 1
+    keepAlpha: 0
+    CopyColor: 1
+    CopyDepth: 1
+    renderingLayerMask: -1
+    maskLights: 0
+    finalBlendMode:
+      source: 1
+      destination: 0
+    renderScaleMode: 0
+    renderScale: 1
 --- !u!1 &935841117
 GameObject:
   m_ObjectHideFlags: 0
