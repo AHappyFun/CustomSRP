@@ -50,6 +50,8 @@ public class Shadows
     static int shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
     static int shadowPancakingId = Shader.PropertyToID("_ShadowPancaking");  //ShadowPancking 阴影平坠开关
 
+    private static int pcssShadowLightWidthId = Shader.PropertyToID("_PCSSLightWidth");
+
     static int otherShadowAtlasId = Shader.PropertyToID("_OtherShadowAtlas");
     static int otherShadowMatricesId = Shader.PropertyToID("_OtherShadowMatrices");
     static int otherShadowTilesId = Shader.PropertyToID("_OtherShadowTiles");
@@ -92,6 +94,9 @@ public class Shadows
         "_OTHER_PCF7"
     };
 
+    private static string[] pcssKeyWords = {"_PCSS_SOFT"};
+
+
     private bool useShadowMask;
 
     public void Setup(ScriptableRenderContext context, CullingResults cullingResults, ShadowSetting settings)
@@ -102,6 +107,19 @@ public class Shadows
         ShadowedDirectionLightCount = 0;
         ShadowedOtherLightCount = 0;
         this.useShadowMask = false;
+        
+        //pcss软阴影设置
+        if (settings.UsePCSS)
+        {
+            buffer.EnableShaderKeyword(pcssKeyWords[0]);
+            buffer.SetGlobalFloat(pcssShadowLightWidthId, settings.PCSSLightWidth);
+            buffer.SetGlobalFloat("_PCSSBias", settings.Bias);
+        }
+        else
+        {
+            buffer.DisableShaderKeyword(pcssKeyWords[0]);
+        }
+
     }
 
     //记录当前平行光数量，其他灯光数量

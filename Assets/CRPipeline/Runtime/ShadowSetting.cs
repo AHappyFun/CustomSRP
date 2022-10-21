@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [System.Serializable]
 public class ShadowSetting 
@@ -28,6 +29,13 @@ public class ShadowSetting
 
     [Range(0.001f, 1f)]
     public float distanceFade = 0.1f;
+
+    public bool UsePCSS = false;
+
+    [Range(0.01f, 20f)]
+    public float PCSSLightWidth = 5.0f;
+
+    public float Bias = 0.1f;
 
     [System.Serializable]
     public struct Directional

@@ -36,6 +36,7 @@ TEXTURE2D_SHADOW(_DirectionalShadowAtlas);
 TEXTURE2D_SHADOW(_OtherShadowAtlas);
 #define SHADOW_SAMPLER sampler_linear_clamp_compare
 SAMPLER_CMP(SHADOW_SAMPLER);
+SAMPLER(sampler_LinearClamp);
 
 CBUFFER_START(_CustomShadows)
 	int _CascadeCount;
@@ -142,6 +143,159 @@ float SampleDirectionalShadowAtlas(float3 positionSTS){
 	);
 }
 
+//--------------PCSS Test-----------------------
+static const float2 PoissonOffsets[32] = {
+    float2(0.06407013, 0.05409927),
+    float2(0.7366577, 0.5789394),
+    float2(-0.6270542, -0.5320278),
+    float2(-0.4096107, 0.8411095),
+    float2(0.6849564, -0.4990818),
+    float2(-0.874181, -0.04579735),
+    float2(0.9989998, 0.0009880066),
+    float2(-0.004920578, -0.9151649),
+    float2(0.1805763, 0.9747483),
+    float2(-0.2138451, 0.2635818),
+    float2(0.109845, 0.3884785),
+    float2(0.06876755, -0.3581074),
+    float2(0.374073, -0.7661266),
+    float2(0.3079132, -0.1216763),
+    float2(-0.3794335, -0.8271583),
+    float2(-0.203878, -0.07715034),
+    float2(0.5912697, 0.1469799),
+    float2(-0.88069, 0.3031784),
+    float2(0.5040108, 0.8283722),
+    float2(-0.5844124, 0.5494877),
+    float2(0.6017799, -0.1726654),
+    float2(-0.5554981, 0.1559997),
+    float2(-0.3016369, -0.3900928),
+    float2(-0.5550632, -0.1723762),
+    float2(0.925029, 0.2995041),
+    float2(-0.2473137, 0.5538505),
+    float2(0.9183037, -0.2862392),
+    float2(0.2469421, 0.6718712),
+    float2(0.3916397, -0.4328209),
+    float2(-0.03576927, -0.6220032),
+    float2(-0.04661255, 0.7995201),
+    float2(0.4402924, 0.3640312),
+};
+
+static const float2 poissonDisk[16] = {
+	float2( -0.94201624, -0.39906216 ),
+    float2( 0.94558609, -0.76890725 ),
+    float2( -0.094184101, -0.92938870 ),
+    float2( 0.34495938, 0.29387760 ),
+    float2( -0.91588581, 0.45771432 ),
+    float2( -0.81544232, -0.87912464 ),
+    float2( -0.38277543, 0.27676845 ),
+    float2( 0.97484398, 0.75648379 ),
+    float2( 0.44323325, -0.97511554 ),
+    float2( 0.53742981, -0.47373420 ),
+    float2( -0.26496911, -0.41893023 ),
+    float2( 0.79197514, 0.19090188 ),
+    float2( -0.24188840, 0.99706507 ),
+    float2( -0.81409955, 0.91437590 ),
+    float2( 0.19984126, 0.78641367 ),
+    float2( 0.14383161, -0.14100790 )
+};
+
+float2 getReceiverPlaneDepthBias (float3 shadowCoord)
+{
+	float2 biasUV;
+	float3 dx = ddx (shadowCoord);
+	float3 dy = ddy (shadowCoord);
+
+	biasUV.x = dy.y * dx.z - dx.y * dy.z;
+	biasUV.y = dx.x * dy.z - dy.x * dx.z;
+	biasUV *= 1.0f / ((dx.x * dy.y) - (dx.y * dy.x));
+	return biasUV;
+}
+
+float _PCSSLightWidth;
+float _PCSSBias;
+real PCSS(float3 coord, float DReceive, float4 positionCS)
+{
+    real attenuation;
+
+	float2 DepthBiasDotFactors = getReceiverPlaneDepthBias(coord);
+	
+	float fractionalSamplingError = 2.0 * dot(_ShadowAtlasSize.yy, abs(DepthBiasDotFactors));
+	fractionalSamplingError = min(fractionalSamplingError, _PCSSBias);
+#if defined(UNITY_REVERSED_Z)
+	fractionalSamplingError *= -1.0;
+#endif
+
+	DReceive -= fractionalSamplingError;
+	
+    //pcss
+    float2 shadowUV = coord.xy;
+
+	
+	float Angle = RandomAngle(positionCS.xy, .1f);
+	float StepAngle = 2.39996322;
+	float SinAngle, CosAngle;
+	sincos(Angle, SinAngle, CosAngle);
+	float2x2 RotMatrix = float2x2(CosAngle, -SinAngle, SinAngle, CosAngle);	
+    
+    //搜索DB的范围 和 当前采样点的距离有关，距离灯光越近，范围越小
+    float SearchWidth = (_PCSSLightWidth) * (DReceive - 0.05) / DReceive;
+    
+    float DAverageBlocker = 0;
+    float BlockerSum = 0.0;
+    float BlockCount = 0.0001f;
+    
+    //1.求平均Distance Blocker
+    for (int i = 0; i < 32; i++)
+    {
+        float2 offset = PoissonOffsets[i] * SearchWidth;
+    	offset = mul(RotMatrix, offset);
+    	
+        float D_sample = SAMPLE_TEXTURE2D(_DirectionalShadowAtlas, sampler_LinearClamp, shadowUV + offset).r;
+
+#if  defined(UNITY_REVERSED_Z)
+        if(D_sample < DReceive)
+#else
+        if(D_sample > DReceive)
+#endif         
+        {
+            BlockerSum += D_sample;
+            BlockCount += 1.0;
+        }
+    }
+
+    if(BlockCount < 1.0)
+    {
+        return 1.0;
+    }
+    else
+    {     
+        DAverageBlocker = BlockerSum / BlockCount;
+    }
+
+    
+#if  defined(UNITY_REVERSED_Z)
+    DAverageBlocker = 1 - DAverageBlocker;
+#endif
+
+    //2.计算软的范围
+    float W_Penumbra = abs(DReceive - DAverageBlocker) * _PCSSLightWidth / DAverageBlocker;
+
+    //3.根据W范围做PCF
+    float sum = 0;
+    for (int i = 0; i < 32; i++)
+    {
+        float2 offset = PoissonOffsets[i] * W_Penumbra * _ShadowAtlasSize.yy;
+    	offset = mul(RotMatrix, offset);
+    		
+        sum += SAMPLE_TEXTURE2D_SHADOW(_DirectionalShadowAtlas, SHADOW_SAMPLER, float3(shadowUV + offset, DReceive)).r;
+    }
+
+    attenuation = sum / 32;
+
+    return attenuation;
+}
+
+//-------------------PCSS Test End----------------------
+
 float FilterDirectionalShadow(float3 positionSTS)
 {
 	#if defined(DIRECTION_FILTER_SETUP)
@@ -170,13 +324,25 @@ float GetCascadeShadow(DirectionalShadowData directional, MyShadowData global, S
         _DirectionalShadowMatrices[directional.tileIndex],
         float4(surfaceWS.position + normalBias, 1.0)
     ).xyz;
-	float shadow = FilterDirectionalShadow(positionSTS);
+	
+	float shadow = 1.0;
+#if defined(_PCSS_SOFT)
+	shadow = PCSS(positionSTS, positionSTS.z, surfaceWS.positionCS);
+	if(global.cascadeBlend < 1.0)
+	{
+		normalBias = surfaceWS.interpolatedNormal * (directional.normalBias * _CascadeData[global.cascadeIndex + 1].y);
+		positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex + 1], float4(surfaceWS.position + normalBias, 1.0)).xyz;
+		shadow = lerp(PCSS(positionSTS, positionSTS.z, surfaceWS.positionCS), shadow, global.cascadeBlend);
+	}
+#else
+	shadow = FilterDirectionalShadow(positionSTS);
 	if(global.cascadeBlend < 1.0)
 	{
 		normalBias = surfaceWS.interpolatedNormal * (directional.normalBias * _CascadeData[global.cascadeIndex + 1].y);
 		positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex + 1], float4(surfaceWS.position + normalBias, 1.0)).xyz;
 		shadow = lerp(FilterDirectionalShadow(positionSTS), shadow, global.cascadeBlend);
 	}
+#endif
 	return shadow;
 }
 

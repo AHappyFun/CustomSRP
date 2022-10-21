@@ -53,6 +53,4 @@ CBUFFER_END
 
  float3 _WorldSpaceCameraPos;
 
-
-
 #endif 

@@ -40,6 +40,19 @@ void ClipLOD(Fragment fragment, float fade)
 	#endif
 }
 
+float RandomAngle(int2 pixCoord, int frameCount)
+{
+	const float t = 2.0 * PI / 16.0;
+	const float Dither[16] = {
+		t * 0,  t * 8,  t * 2,  t * 10,
+        t * 12, t * 4,  t * 14, t * 6,
+        t * 3,  t * 11, t * 1,  t * 9,
+        t * 15, t * 7,  t * 13, t * 5,
+    };
+	float angle = Dither[(pixCoord.x + frameCount) % 4 + 4 * ((pixCoord.y + frameCount) % 4)];
+	return angle;
+}
+
 #define UNITY_MATRIX_M unity_ObjectToWorld
 #define UNITY_MATRIX_I_M unity_WorldToObject
 #define UNITY_MATRIX_V unity_MatrixV

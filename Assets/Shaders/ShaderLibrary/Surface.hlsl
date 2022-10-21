@@ -5,6 +5,7 @@
 
 struct Surface{
 	float3 position;
+	float4 positionCS;
 	float3 normal;
 	float3 interpolatedNormal;
 	float3 viewDir;

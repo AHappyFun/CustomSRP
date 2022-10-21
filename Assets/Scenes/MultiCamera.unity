@@ -1089,7 +1089,7 @@ MonoBehaviour:
   settings:
     overridePostFX: 1
     postFXSettings: {fileID: 11400000, guid: a06b516ddf4ffff4587bb88b63c1da7b, type: 2}
-    allowFXAA: 0
+    allowFXAA: 1
     keepAlpha: 0
     CopyColor: 1
     CopyDepth: 1

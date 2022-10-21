@@ -76,6 +76,7 @@ half4 litFrag(Varyings input) :SV_TARGET
 	
 	  Surface surf;
 	  surf.position = input.worldPos;
+	  surf.positionCS = input.positionCS_SS;
 
 #if defined(_NORMAL_MAP)
 	  surf.normal = NormalTangentToWorld(GetNormalTangentSpace(cfg), input.worldNormal, input.worldTangent);

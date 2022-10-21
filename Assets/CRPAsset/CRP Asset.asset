@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: CRP Asset
   m_EditorClassIdentifier: 
   UseDynamicBatching: 0
-  UseGPUInstancing: 1
-  UseSRPBatcher: 1
+  UseGPUInstancing: 0
+  UseSRPBatcher: 0
   UseLightsPerObject: 1
   cameraBufferSettings:
     allowHDR: 1
@@ -22,7 +22,7 @@ MonoBehaviour:
     copyColorReflections: 0
     copyDepth: 1
     copyDepthReflections: 0
-    renderScale: 1.155
+    renderScale: 1
     bicubicRescalingMode: 2
     fxaa:
       enabled: 1
@@ -31,8 +31,11 @@ MonoBehaviour:
       subpixelBlending: 0.455
       quality: 0
   shadowSetting:
-    maxDistance: 71
+    maxDistance: 30.54
     distanceFade: 0.133
+    UsePCSS: 1
+    PCSSLightWidth: 5
+    Bias: 0.05
     directional:
       atlasSize: 4096
       filter: 2
