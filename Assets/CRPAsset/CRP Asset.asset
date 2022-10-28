@@ -31,11 +31,11 @@ MonoBehaviour:
       subpixelBlending: 0.455
       quality: 0
   shadowSetting:
-    maxDistance: 30.54
+    maxDistance: 80
     distanceFade: 0.133
     UsePCSS: 1
     PCSSLightWidth: 5
-    Bias: 0.05
+    Bias: 0.01
     directional:
       atlasSize: 4096
       filter: 2
