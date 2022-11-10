@@ -209,7 +209,6 @@ real PCSS(float3 coord, float DReceive, float4 positionCS)
 	
     //pcss
     float2 shadowUV = coord.xy;
-
 	
 	float Angle = RandomAngle(positionCS.xy, .1f);
 	float SinAngle, CosAngle;
@@ -217,7 +216,11 @@ real PCSS(float3 coord, float DReceive, float4 positionCS)
 	float2x2 RotMatrix = float2x2(CosAngle, -SinAngle, SinAngle, CosAngle);	
     
     //搜索DB的范围 和 当前采样点的距离有关，距离灯光越近，范围越小
-    float SearchWidth = (_PCSSLightWidth) * (DReceive - 0.05) / DReceive;
+	float searchDepth = DReceive;
+#if defined(UNITY_REVERSED_Z)
+	searchDepth = 1 - searchDepth;
+#endif
+    float SearchWidth = (_PCSSLightWidth) * pow(searchDepth , 6);// (DReceive - 0.05) / DReceive;
     
     float DAverageBlocker = 0;
     float BlockerSum = 0.0;
@@ -314,7 +317,8 @@ float GetCascadeShadow(DirectionalShadowData directional, MyShadowData global, S
 		shadow = lerp(FilterDirectionalShadow(positionSTS), shadow, global.cascadeBlend);
 	}
 #endif
-	return shadow;
+	//shadow = pow((positionSTS.z - 1) , 6);
+	return shadow ;
 }
 
 float GetBakedShadow(ShadowMask mask, int channel)
