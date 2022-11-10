@@ -220,7 +220,8 @@ real PCSS(float3 coord, float DReceive, float4 positionCS)
 #if defined(UNITY_REVERSED_Z)
 	searchDepth = 1 - searchDepth;
 #endif
-    float SearchWidth = (_PCSSLightWidth) * pow(searchDepth , 6);// (DReceive - 0.05) / DReceive;
+    float SearchWidth = (_PCSSLightWidth) * (pow(searchDepth , 6));// (DReceive - 0.05) / DReceive;
+	//float SearchWidth = _PCSSLightWidth * (DReceive - 0.05); // 0.05代表灯光锥体Near的深度
     
     float DAverageBlocker = 0;
     float BlockerSum = 0.0;

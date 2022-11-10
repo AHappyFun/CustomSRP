@@ -1,0 +1,230 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-2399297818958628491
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 5
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Plants_m_parterre_01_02_1
+  m_Shader: {fileID: 4800000, guid: 7420ea944a14d224daf9c4e924021c63, type: 3}
+  m_ValidKeywords:
+  - _ALPHATEST_ON
+  - _NORMALMAP
+  m_InvalidKeywords:
+  - LOD_FADE_CROSSFADE_OFF
+  - _LIGHT
+  - _RealTime
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses:
+  - MOTIONVECTORS
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: d112501e215964746b6ff050e3396e06, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: 7e2824c232602d745a85b2a6e998c2f9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpSplat0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpSplat1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpSplat2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpSplat3:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMOSMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _HeightMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Main_texture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MosMap:
+        m_Texture: {fileID: 2800000, guid: 9b02306089cde64449fbc7e82d01d9ca, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NoiseTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SSSMaskMap:
+        m_Texture: {fileID: 2800000, guid: c465d00a3aa08f54787736f810037b5f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Splat3:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TextureSample0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - LOD_FADE_CROSSFADE: 0
+    - _Ao: 1
+    - _Bias: 0.6
+    - _BloomFactor: 0
+    - _Btoom_range_move: 0
+    - _BumpScale: 0.3
+    - _Cull: 0
+    - _Cutoff: 0.502
+    - _DetailGlossMapScale: 1
+    - _DetailMetallicMapScale: 1
+    - _DetailNormalMapScale: 1
+    - _DirWindSpeed: 0
+    - _DirWindStrength: 0
+    - _DstBlend: 0
+    - _EMISSION: 0
+    - _Emission: 0.3
+    - _EnvironmentReflections: 1
+    - _Falloff: 12
+    - _FeatureMode: 0
+    - _GlossMapScale: 0
+    - _HeightScale: 0
+    - _Hue: 1
+    - _InvFade: 1
+    - _LIGHT: 1
+    - _Main_tex_stranth: 0
+    - _MaskScale: 1
+    - _MaxDist: 25
+    - _MetallicMapScale: 0
+    - _MinDist: 10
+    - _MipmapBias: 1
+    - _Mode: 1
+    - _NORMALMAP: 1
+    - _NoTillingSwitch: 0
+    - _NoiseWindStrength: 0
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _Range: 1
+    - _RealTime: 1
+    - _RealTimeWindScal: 0.24
+    - _SDFHeight: 0
+    - _SDFRange: -1
+    - _SSSHeight: 0
+    - _SSSIntensity: 0
+    - _SSSPower: 0
+    - _SSSValue: 4
+    - _Smoothness0: 0
+    - _Smoothness1: 0
+    - _Smoothness2: 0
+    - _Smoothness3: 0
+    - _SoftParticlesSwitch: 0
+    - _SoftWindValue: 1
+    - _SpecularAAScale: 0
+    - _SpecularHighlights: 1
+    - _SrcBlend: 1
+    - _StencilActorShadow: 0
+    - _StencilPass: 0
+    - _StencilPass1: 0
+    - _Tessellation: 1
+    - _Top_range: 0
+    - _Top_range_move: 0
+    - _Weight: 0.1
+    - _WinDirectionX: -1
+    - _WinDirectionZ: -1
+    - _Wind_size_XZ: 2
+    - _Wind_size_Y: 1
+    - _Wind_speed: 1
+    - _Wind_stranth: 1
+    - _Wrap: 0.2
+    - _ZWrite: 1
+    - _addLightSwitch: 0
+    - _specularRange: 1
+    - _waterHeight: 0
+    - hlod_LODFade: 1
+    m_Colors:
+    - _AO_color: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseColor: {r: 0.7467426, g: 0.9056604, b: 0.77146316, a: 1}
+    - _Color_bottom: {r: 0.2034557, g: 0.490566, b: 0.2013172, a: 1}
+    - _Color_middle: {r: 0.2892043, g: 0.6320754, b: 0.5074909, a: 1}
+    - _Color_top: {r: 0.754717, g: 0.6148612, b: 0.5375578, a: 1}
+    - _DetailColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0.5234247, g: 0.5894289, b: 0.735849, a: 1}
+    - _LightmapST: {r: 0, g: 0, b: 0, a: 0}
+    - _SSSColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Specular0: {r: 0.09999997, g: 0.09999997, b: 0.09999997, a: 1}
+    - _Specular1: {r: 0.09999997, g: 0.09999997, b: 0.09999997, a: 1}
+    - _Specular2: {r: 0.09999997, g: 0.09999997, b: 0.09999997, a: 1}
+    - _Specular3: {r: 0.09999997, g: 0.09999997, b: 0.09999997, a: 1}
+    - _SubsurfaceColor: {r: 0.13286836, g: 0.2831488, b: 0.116970696, a: 1}
+    - _SunLightDir: {r: 0, g: 0, b: 0, a: 0}
+    - _Wind: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
