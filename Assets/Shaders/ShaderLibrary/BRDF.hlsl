@@ -20,7 +20,7 @@ float OneMinusReflect(float metallic){
 	return ( 1.0 - metallic )* range;
 }
 
-//CookTorrance ¸ß¹â
+//CookTorrance é«˜å…‰
 float SpecularStrength(Surface surface, BRDF brdf, Light light)
 {
 	float3 h = SafeNormalize(light.direction + surface.viewDir);
@@ -38,17 +38,17 @@ float3 DirectBRDF(Surface surface, BRDF brdf, Light light){
 
 BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false){
 	BRDF brdf;
-	float oneMinusReflect = OneMinusReflect(surface.metallic); //½ğÊô¶ÈÔ½¸ß£¬diffuseÔ½ÉÙ
+	float oneMinusReflect = OneMinusReflect(surface.metallic); //é‡‘å±åº¦è¶Šé«˜ï¼Œdiffuseè¶Šå°‘
 	brdf.diffuse = surface.color * oneMinusReflect;
 	if(applyAlphaToDiffuse){	
 		brdf.diffuse *= surface.alpha;
 	}
 
-	brdf.specular = lerp(MIN_REFLECT, surface.color, surface.metallic); //Ëæ×Å½ğÊô¶ÈÒ²²î²»¶à
+	brdf.specular = lerp(MIN_REFLECT, surface.color, surface.metallic); //éšç€é‡‘å±åº¦ä¹Ÿå·®ä¸å¤š
 
 	//roughness = 1 - smoothness 
 	brdf.perceptualRoughness  = PerceptualSmoothnessToPerceptualRoughness(surface.smoothness);
-	//Æ½·½
+	//å¹³æ–¹
 	brdf.roughness = PerceptualRoughnessToRoughness(brdf.perceptualRoughness);
 
 	brdf.fresnel = saturate(surface.smoothness + 1.0 - oneMinusReflect);
@@ -56,18 +56,18 @@ BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false){
 	return brdf;
 };
 
-//¼ä½Ó¹âBRDF
+//é—´æ¥å…‰BRDF
 float3 IndirectBRDF(Surface surface, BRDF brdf, float3 diffuse, float3 specular)
 {
 
 	float3 indirectDiffuse = diffuse * brdf.diffuse;
 
-	//fresnel·´Éä
+	//fresnelåå°„
 	float fresnelStrength = surface.fresnelStrength * Pow4(1.0 - saturate(dot(surface.normal, surface.viewDir)));
 	
 	float3 indirectSpecular = specular * lerp(brdf.specular, brdf.fresnel, fresnelStrength);
 
-	//ÊÜµ½´Ö²Ú¶ÈÓ°Ïì
+	//å—åˆ°ç²—ç³™åº¦å½±å“
 	indirectSpecular /= brdf.roughness * brdf.roughness + 1.0;
 	
 	return (indirectDiffuse + indirectSpecular) * surface.occlusion;

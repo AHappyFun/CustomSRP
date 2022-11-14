@@ -220,8 +220,8 @@ real PCSS(float3 coord, float DReceive, float4 positionCS)
 #if defined(UNITY_REVERSED_Z)
 	searchDepth = 1 - searchDepth;
 #endif
-    float SearchWidth = (_PCSSLightWidth) * (pow(searchDepth , 6));// (DReceive - 0.05) / DReceive;
-	//float SearchWidth = _PCSSLightWidth * (DReceive - 0.05); // 0.05代表灯光锥体Near的深度
+    //float SearchWidth = (_PCSSLightWidth) * (pow(searchDepth , 6));
+	float SearchWidth = _PCSSLightWidth * (DReceive - 0.05) / DReceive; // 0.05代表灯光锥体Near的深度
     
     float DAverageBlocker = 0;
     float BlockerSum = 0.0;
@@ -251,9 +251,9 @@ real PCSS(float3 coord, float DReceive, float4 positionCS)
     DAverageBlocker = 1 - DAverageBlocker;
 #endif
 
-    //2.计算软的范围
-    float W_Penumbra = abs(DReceive - DAverageBlocker) * _PCSSLightWidth / DAverageBlocker;
-
+    //2.计算软的范围  做平方是为了让远近差别大点
+    float W_Penumbra = pow((abs(DReceive - DAverageBlocker) / DAverageBlocker), 2) * _PCSSLightWidth;
+	W_Penumbra = max(2, W_Penumbra);
     //3.根据W范围做PCF
     float sum = 0;
     for (int i = 0; i < 32; i++)
@@ -266,7 +266,8 @@ real PCSS(float3 coord, float DReceive, float4 positionCS)
 
     attenuation = sum / 32;
 
-    return attenuation;
+	return attenuation;
+    return W_Penumbra /_PCSSLightWidth ;
 }
 
 //-------------------PCSS Test End----------------------

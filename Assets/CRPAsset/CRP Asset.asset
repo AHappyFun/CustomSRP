@@ -34,7 +34,7 @@ MonoBehaviour:
     maxDistance: 80
     distanceFade: 0.133
     UsePCSS: 1
-    PCSSLightWidth: 8
+    PCSSLightWidth: 5
     Bias: 0.01
     directional:
       atlasSize: 4096

@@ -32,6 +32,9 @@
     	[NoScaleOffset]_EmissionTex("EmissionTex", 2D) = "white" {}
     	[HDR]_EmissionColor("EmissionColor", color) = (0,0,0,0)
     	
+    	[Toggle(_IBL_GI)]_IBL_ON("IBL ON", float) = 0
+    	_IBLCubeMap("IBL", cube) = "white"{}
+    	
 		_AlphaCutoff("Alpha CutOff", Range(0,1)) = 0
 
         [Toggle(_CLIPPING)] _Clipping("AlphaTest", float) = 0
@@ -81,6 +84,7 @@
 			#pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
 			#pragma multi_compile _ _LIGHTS_PER_OBJECT
 			#pragma multi_compile _ _PCSS_SOFT
+			#pragma multi_compile _ _IBL_GI
 
 			//需要处理Loop GLES3.0 
 			#pragma target 3.5

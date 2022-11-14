@@ -20,6 +20,10 @@ SAMPLER(samplerunity_ProbeVolumeSH);
 TEXTURECUBE(unity_SpecCube0);
 SAMPLER(samplerunity_SpecCube0);
 
+//IBL
+TEXTURECUBE(_IBLCubeMap);
+SAMPLER(sampler_IBLCubeMap);
+
 #if defined(LIGHTMAP_ON)
     #define GI_ATTRIBUTE_DATA float2 lightMapUV : TEXCOORD1;
     #define GI_VARYINGS_DATA float2 lightMapUV : VAR_LIGHT_MAP_UV;
@@ -34,7 +38,7 @@ SAMPLER(samplerunity_SpecCube0);
     #define GI_FRAGMENT_DATA(input) 0.0
 #endif
 
-//����LightMap
+//采样LightMap
 float3 SampleLightMap(float2 lightMapUV)
 {
     #if defined(LIGHTMAP_ON)
@@ -53,7 +57,7 @@ float3 SampleLightMap(float2 lightMapUV)
     #endif
 }
 
-//����LightProbe
+//采样LightProbe
 float3 SampleLightProbe(Surface surfaceWS)
 {
     #if defined(LIGHTMAP_ON)
@@ -85,7 +89,7 @@ float3 SampleLightProbe(Surface surfaceWS)
     #endif
 }
 
-//����Bake��Ӱ
+//采样Bake阴影
 float4 SampleBakedShadow(float2 lightMapUV, Surface surfaceWS)
 {
     #if defined(LIGHTMAP_ON)
@@ -107,16 +111,26 @@ float4 SampleBakedShadow(float2 lightMapUV, Surface surfaceWS)
     #endif
 }
 
-//����SkyBox
+//采样skybox cubemap
+//其实是IBL Specular，预滤波环境贴图（mipmap）, 使用法线和视线的反射方向进行查找
 float3 SampleEnvironment(Surface surfaceWS, BRDF brdf)
 {
+    //根据mipmap 级别选择反射粗糙度
     float3 uvw = reflect(-surfaceWS.viewDir, surfaceWS.normal);
     float mip = PerceptualRoughnessToMipmapLevel(brdf.perceptualRoughness);
     float4 env = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, uvw, mip);
     
-    //HDR����
+    //HDR处理
     return DecodeHDREnvironment(env, unity_SpecCube0_HDR);
 }
+
+//采样IBL Diffuse 辐照度
+float3 SampleIBLDiffuse(Surface surfaceWS, BRDF brdf)
+{
+    float3 diffuse = SAMPLE_TEXTURECUBE_LOD(_IBLCubeMap, sampler_IBLCubeMap, surfaceWS.normal, 0);
+    return diffuse;
+}
+
 
 struct GI
 {
@@ -128,7 +142,11 @@ struct GI
 GI GetGI(float2 lightMapUV, Surface surfaceWS, BRDF brdf)
 {
     GI gi;
+#if defined(_IBL_GI)
+    gi.diffuse = SampleIBLDiffuse(surfaceWS, brdf);
+#else
     gi.diffuse = SampleLightMap(lightMapUV) + SampleLightProbe(surfaceWS);
+#endif
     gi.specular = SampleEnvironment(surfaceWS, brdf);
     gi.shadowMask.always = false;
     gi.shadowMask.distance = false;
