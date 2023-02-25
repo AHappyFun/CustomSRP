@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: CRP Asset
   m_EditorClassIdentifier: 
   UseDynamicBatching: 0
-  UseGPUInstancing: 0
-  UseSRPBatcher: 0
-  UseLightsPerObject: 1
+  UseGPUInstancing: 1
+  UseSRPBatcher: 1
+  UseLightsPerObject: 0
   cameraBufferSettings:
     allowHDR: 1
     copyColor: 1
@@ -34,8 +34,8 @@ MonoBehaviour:
     maxDistance: 80
     distanceFade: 0.133
     UsePCSS: 1
-    PCSSLightWidth: 5
-    Bias: 0.01
+    PCSSLightWidth: 10.06
+    Bias: 0.1
     directional:
       atlasSize: 4096
       filter: 2

@@ -34,6 +34,7 @@
     	
     	[Toggle(_IBL_GI)]_IBL_ON("IBL ON", float) = 0
     	_IBLCubeMap("IBL", cube) = "white"{}
+    	_IBLSpecularLUT("SpecularLUT", 2D) = "white"{}
     	
 		_AlphaCutoff("Alpha CutOff", Range(0,1)) = 0
 

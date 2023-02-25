@@ -19,7 +19,12 @@ float3 GetLighting(Surface surfaceWS, BRDF brdf, GI gi){
 	MyShadowData shadowData = GetShadowData(surfaceWS);
 	shadowData.shadowMask = gi.shadowMask;
 	
-	float3 indirect = IndirectBRDF(surfaceWS, brdf, gi.diffuse, gi.specular);
+	float3 indirect;
+#if defined(_IBL_GI)
+	indirect = IBLGI(surfaceWS, brdf);
+#else
+	indirect = IndirectBRDF(surfaceWS, brdf, gi.diffuse, gi.specular);
+#endif
 	float3 direct = 0;
 	
 	for(int i = 0; i < GetDirLightCount(); i++){

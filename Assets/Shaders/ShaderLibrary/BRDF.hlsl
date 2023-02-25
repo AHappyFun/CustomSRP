@@ -20,7 +20,7 @@ float OneMinusReflect(float metallic){
 	return ( 1.0 - metallic )* range;
 }
 
-//CookTorrance 高光
+//CookTorrance 高光 
 float SpecularStrength(Surface surface, BRDF brdf, Light light)
 {
 	float3 h = SafeNormalize(light.direction + surface.viewDir);
@@ -32,8 +32,52 @@ float SpecularStrength(Surface surface, BRDF brdf, Light light)
 	return r2/(d2 * max(0.1, lh2) * normalization);
 }
 
+//DFG
+float CookTooranceSpecular(Surface surface, BRDF brdf, Light light)
+{
+	float3 h = SafeNormalize(light.direction + surface.viewDir);
+	float a2 = Square(brdf.roughness);
+	float nh2 = Square(saturate(dot(surface.normal, h)));
+
+	float nv = dot(surface.normal, surface.viewDir);
+	float nl = dot(surface.normal, light.direction);
+	
+	//D
+	float d = a2 / PI * Square(nh2 * (a2 - 1) + 1);
+	//F
+	float f = brdf.fresnel;
+	//G
+	float k = Square(brdf.roughness + 1) * 0.25f;	
+	float ggx1 = nv / (nv * (1-k) + k);
+	float ggx2 = nl / (nl * (1-k) + k);
+	float g = ggx1 * ggx2;
+
+	float ks = (d * f * g) * 0.25f / (nv * nl);  
+
+	return ks;
+}
+
+//直接光BRDF
 float3 DirectBRDF(Surface surface, BRDF brdf, Light light){
-	return SpecularStrength(surface, brdf, light) * brdf.specular + brdf.diffuse;
+	return CookTooranceSpecular(surface, brdf, light) * brdf.specular + brdf.diffuse;
+	//return SpecularStrength(surface, brdf, light) * brdf.specular + brdf.diffuse;
+}
+
+//间接光BRDF
+float3 IndirectBRDF(Surface surface, BRDF brdf, float3 diffuse, float3 specular)
+{
+
+	float3 indirectDiffuse = diffuse * brdf.diffuse;
+
+	//fresnel反射
+	float fresnelStrength = surface.fresnelStrength * Pow4(1.0 - saturate(dot(surface.normal, surface.viewDir)));
+	
+	float3 indirectSpecular = specular * lerp(brdf.specular, brdf.fresnel, fresnelStrength);
+
+	//受到粗糙度影响
+	indirectSpecular /= brdf.roughness * brdf.roughness + 1.0;
+	
+	return (indirectDiffuse + indirectSpecular) * surface.occlusion;
 }
 
 BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false){
@@ -56,21 +100,5 @@ BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false){
 	return brdf;
 };
 
-//间接光BRDF
-float3 IndirectBRDF(Surface surface, BRDF brdf, float3 diffuse, float3 specular)
-{
-
-	float3 indirectDiffuse = diffuse * brdf.diffuse;
-
-	//fresnel反射
-	float fresnelStrength = surface.fresnelStrength * Pow4(1.0 - saturate(dot(surface.normal, surface.viewDir)));
-	
-	float3 indirectSpecular = specular * lerp(brdf.specular, brdf.fresnel, fresnelStrength);
-
-	//受到粗糙度影响
-	indirectSpecular /= brdf.roughness * brdf.roughness + 1.0;
-	
-	return (indirectDiffuse + indirectSpecular) * surface.occlusion;
-}
 
 #endif

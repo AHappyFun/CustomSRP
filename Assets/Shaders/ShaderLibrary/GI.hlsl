@@ -23,6 +23,8 @@ SAMPLER(samplerunity_SpecCube0);
 //IBL
 TEXTURECUBE(_IBLCubeMap);
 SAMPLER(sampler_IBLCubeMap);
+TEXTURE2D(_IBLSpecularLUT);
+SAMPLER(sampler_IBLSpecularLUT);
 
 #if defined(LIGHTMAP_ON)
     #define GI_ATTRIBUTE_DATA float2 lightMapUV : TEXCOORD1;
@@ -124,11 +126,33 @@ float3 SampleEnvironment(Surface surfaceWS, BRDF brdf)
     return DecodeHDREnvironment(env, unity_SpecCube0_HDR);
 }
 
-//采样IBL Diffuse 辐照度
-float3 SampleIBLDiffuse(Surface surfaceWS, BRDF brdf)
+
+float3 FresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
 {
+    return F0 + (max(float3(1.0 - roughness, 1.0 - roughness, 1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+float3 IBLGI(Surface surfaceWS, BRDF brdf)
+{
+    float F0 = lerp(MIN_REFLECT, surfaceWS.color, surfaceWS.metallic);
+    float f = FresnelSchlickRoughness(max(dot(surfaceWS.normal, surfaceWS.viewDir), 0.0), F0, brdf.roughness);
+
+    float kd_ibl = (1 - f) * (1 - surfaceWS.metallic);
     float3 diffuse = SAMPLE_TEXTURECUBE_LOD(_IBLCubeMap, sampler_IBLCubeMap, surfaceWS.normal, 0);
-    return diffuse;
+    float3 diffuseCol = kd_ibl * diffuse * surfaceWS.color;
+
+    //预滤波
+    float mip = PerceptualRoughnessToMipmapLevel(brdf.perceptualRoughness);
+    float3 reflectDir = reflect(-surfaceWS.viewDir, surfaceWS.normal);
+    float4 prefilteredColor  = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, reflectDir, mip);
+
+    //查找表
+    float nv = dot(surfaceWS.normal, surfaceWS.viewDir);
+    float2 envBrdf = SAMPLE_TEXTURE2D(_IBLSpecularLUT, sampler_IBLSpecularLUT, float2(max(nv, 0.0), brdf.roughness)).rg;
+    float3 specularCol = prefilteredColor * (envBrdf.r * f + envBrdf.y);
+
+    float3 indirect = (diffuseCol + specularCol) * surfaceWS.occlusion;
+    return indirect;
 }
 
 
@@ -142,12 +166,16 @@ struct GI
 GI GetGI(float2 lightMapUV, Surface surfaceWS, BRDF brdf)
 {
     GI gi;
-#if defined(_IBL_GI)
-    gi.diffuse = SampleIBLDiffuse(surfaceWS, brdf);
+#if defined(_IBL_GI) 
 #else
     gi.diffuse = SampleLightMap(lightMapUV) + SampleLightProbe(surfaceWS);
 #endif
+
+#if defined(_IBL_GI)
+#else
     gi.specular = SampleEnvironment(surfaceWS, brdf);
+#endif
+
     gi.shadowMask.always = false;
     gi.shadowMask.distance = false;
     gi.shadowMask.shadows = 1.0;

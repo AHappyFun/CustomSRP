@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: IBL
   m_Shader: {fileID: 4800000, guid: bf3f65dd57dd8994cbba1a6c42853500, type: 3}
-  m_ShaderKeywords: _RECEIVE_SHADOWS _SHADOWS_ON
+  m_ShaderKeywords: _IBL_GI _RECEIVE_SHADOWS _SHADOWS_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -55,6 +55,10 @@ Material:
         m_Texture: {fileID: 8900000, guid: e945a5fdf8eb81248b754c7714d6a178, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _IBLSpecularLUT:
+        m_Texture: {fileID: 2800000, guid: 9963ac0f04c5f6740b0a6b81555454c7, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -94,8 +98,9 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _IBL_ON: 1
     - _MaskMapToggle: 0
-    - _Metallic: 0.65
+    - _Metallic: 0.376
     - _Mode: 0
     - _NormalMapToggle: 0
     - _NormalScale: 1
@@ -105,7 +110,7 @@ Material:
     - _PremulAlpha: 0
     - _ReceiveShadows: 1
     - _Shadows: 0
-    - _Smoothness: 0.68
+    - _Smoothness: 0.297
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
