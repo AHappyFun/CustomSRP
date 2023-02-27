@@ -20,3 +20,9 @@
 
 
 ![Image text](https://github.com/AHappyFun/CustomSRP/blob/master/readme/r1.png)
+
+![Image text](https://github.com/AHappyFun/CustomSRP/blob/master/readme/alllight.jpg)
+
+![Image text](https://github.com/AHappyFun/CustomSRP/blob/master/readme/pcss.jpg)
+
+![Image text](https://github.com/AHappyFun/CustomSRP/blob/master/readme/multicam.jpg)
