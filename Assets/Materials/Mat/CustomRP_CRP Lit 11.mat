@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: CustomRP_CRP Lit 3
+  m_Name: CustomRP_CRP Lit 11
   m_Shader: {fileID: 4800000, guid: bf3f65dd57dd8994cbba1a6c42853500, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 0
@@ -64,20 +64,20 @@ Material:
     - _DetailSmothness: 1
     - _DetailToggle: 0
     - _DstBlend: 0
-    - _Fresnel: 0.744
+    - _Fresnel: 0.769
     - _IBL_ON: 0
     - _MaskMapToggle: 0
-    - _Metallic: 0
+    - _Metallic: 0.548
     - _NormalMapToggle: 0
     - _NormalScale: 1
-    - _Occlusion: 0
+    - _Occlusion: 1
     - _PremulAlpha: 0
     - _ReceiveShadows: 1
     - _Shadows: 0
-    - _Smoothness: 0
+    - _Smoothness: 0.363
     - _SrcBlend: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.6839622, g: 0.80650747, b: 1, a: 1}
-    - _Color: {r: 0.68396217, g: 0.80650747, b: 1, a: 1}
+    - _BaseColor: {r: 0, g: 1, b: 0.20215249, a: 1}
+    - _Color: {r: 0, g: 1, b: 0.20215249, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

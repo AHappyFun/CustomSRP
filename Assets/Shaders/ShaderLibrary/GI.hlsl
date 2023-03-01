@@ -72,7 +72,7 @@ float3 SampleLightProbe(Surface surfaceWS)
                 surfaceWS.position, surfaceWS.normal,
                 unity_ProbeVolumeWorldToObject,
                 unity_ProbeVolumeParams.y, unity_ProbeVolumeParams.z,
-                unity_ProbeVolumeParams.xyz, unity_ProbeVolumeSizeInv.xyz             
+                unity_ProbeVolumeMin.xyz, unity_ProbeVolumeSizeInv.xyz             
             );
         }
         else
