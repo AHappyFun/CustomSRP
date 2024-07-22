@@ -11,8 +11,6 @@ public class CameraRenderer
 
     public Camera camera;
 
-    static Material errorMat;
-
     Lighting lighting = new Lighting();
     
     PostFXStack postFXStack = new PostFXStack();
@@ -20,20 +18,7 @@ public class CameraRenderer
     static CameraSettings defaultCameraSettings = new CameraSettings();
 
     private bool useHDR, useScaledRendering;
-
-    static ShaderTagId unlitShaderTagID = new ShaderTagId("SRPDefaultUnlit"); //SRP默认Tag
-    static ShaderTagId litShaderTagID = new ShaderTagId("CustomLit");  //自定义受光材质Tag
-    //buildin 旧Tag
-    static ShaderTagId[] legacyShaderTagIds =
-    {
-        new ShaderTagId("ForwardBase"),
-        new ShaderTagId("Always"),
-        new ShaderTagId("PrepassBase"),
-        new ShaderTagId("Vertex"),
-        new ShaderTagId("VertexLMRGBM"),
-        new ShaderTagId("VertexLM")
-    };
-
+    
     //private static int frameBufferID = Shader.PropertyToID("_CameraFrameBuffer");
     public static int bufferSizeID = Shader.PropertyToID("_CameraBufferSize");
     public static int colorAttachmentID = Shader.PropertyToID("_CameraColorAttachment");
@@ -82,7 +67,7 @@ public class CameraRenderer
         CoreUtils.Destroy(missingTexture);
     }
 
-    public void Render(RenderGraph renderGraph, ScriptableRenderContext ctx, Camera cam, CameraBufferSettings cameraBufferSettings, bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject ,ShadowSetting shadowSetting, PostFXSettings postFXSettings, int colorLUTResolution)
+    public void Render(RenderGraph renderGraph, ScriptableRenderContext ctx, Camera cam, CameraBufferSettings cameraBufferSettings, bool useLightsPerObject ,ShadowSetting shadowSetting, PostFXSettings postFXSettings, int colorLUTResolution)
     {
         context = ctx;
         camera = cam;
@@ -182,6 +167,7 @@ public class CameraRenderer
             commandBuffer = CommandBufferPool.Get(),
             currentFrameIndex = Time.frameCount,
             executionName = cameraSampler.name,
+            rendererListCulling = true,
             scriptableRenderContext = context
         };
 
@@ -199,11 +185,25 @@ public class CameraRenderer
             //摄像机渲染物体相关设置
             SetupPass.Record(renderGraph, this);
             
-            //画可见几何体
-            VisibleGeometryPass.Record(renderGraph, this, useDynamicBatch, useGPUIInstance, useLightsPerObject, cameraSettings.renderingLayerMask);
+            //画可见几何体，被下面不透明skybox透明替换
+            //VisibleGeometryPass.Record(renderGraph, this, useDynamicBatch, useGPUIInstance, useLightsPerObject, cameraSettings.renderingLayerMask);
+            
+            //画不透明
+            GeometryPass.Record(renderGraph, cam, cullingResults, useLightsPerObject, cameraSettings.renderingLayerMask, true);
+            
+            //画Skybox
+            SkyboxPass.Record(renderGraph, cam);
+
+            if (useColorTexture || useDepthTexture)
+            {
+                CopyAttachmentsPass.Record(renderGraph, this);
+            }
+            
+            //半透明
+            GeometryPass.Record(renderGraph, cam, cullingResults, useLightsPerObject, cameraSettings.renderingLayerMask, false);
             
             //画错误shader
-            UnsupportedShadersPass.Record(renderGraph, this);
+            UnsupportedShadersPass.Record(renderGraph, cam, cullingResults);
             
             //后处理
             if (postFXStack.IsActive)
@@ -271,6 +271,7 @@ public class CameraRenderer
     /// <summary>
     /// 画几何体
     /// </summary>
+    /*
     public void DrawVisableGeometry(bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject, int renderingLayerMask)
     {
 
@@ -319,27 +320,28 @@ public class CameraRenderer
         filteringSettings.renderQueueRange = RenderQueueRange.transparent;
         context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
     }
+    */
 
     /// <summary>
     /// 画错误的shader
     /// </summary>
-    public void DrawUnsupportShaders()
-    {
-        if (!errorMat)
-        {
-            errorMat = new Material(Shader.Find("Hidden/InternalErrorShader"));
-        }
-        DrawingSettings drawingSettings = new DrawingSettings(legacyShaderTagIds[0], new SortingSettings(camera))
-        {
-            overrideMaterial = errorMat
-        };
-        for (int i = 1; i < legacyShaderTagIds.Length; i++)
-        {
-            drawingSettings.SetShaderPassName(i, legacyShaderTagIds[i]);
-        }
-        FilteringSettings filteringSettings = FilteringSettings.defaultValue;
-        context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
-    }
+    //public void DrawUnsupportShaders()
+    //{
+    //    if (!UnsupportedShadersPass.errorMat)
+    //    {
+    //        UnsupportedShadersPass.errorMat = new Material(Shader.Find("Hidden/InternalErrorShader"));
+    //    }
+    //    DrawingSettings drawingSettings = new DrawingSettings(legacyShaderTagIds[0], new SortingSettings(camera))
+    //    {
+    //        overrideMaterial = UnsupportedShadersPass.errorMat
+    //    };
+    //    for (int i = 1; i < legacyShaderTagIds.Length; i++)
+    //    {
+    //        drawingSettings.SetShaderPassName(i, legacyShaderTagIds[i]);
+    //    }
+    //    FilteringSettings filteringSettings = FilteringSettings.defaultValue;
+    //    context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
+    //}
 
 #if UNITY_EDITOR
     /// <summary>
@@ -426,8 +428,9 @@ public class CameraRenderer
     /// <summary>
     /// 复制Attachment到Color和Depth图
     /// </summary>
-    void CopyAttachments()
+    public void CopyAttachments()
     {
+        ExecuteBuffer();
         if (useColorTexture)
         {
             commandBuffer.GetTemporaryRT(colorTextureID, bufferSize.x, bufferSize.y,
@@ -477,7 +480,7 @@ public class CameraRenderer
     }
     
     static Rect fullViewRect = new Rect(0f, 0f, 1f, 1f);
-    
+
     public void DrawFinal(CameraSettings.FinalBlendMode finalBlendMode)
     {
         

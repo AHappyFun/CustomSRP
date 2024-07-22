@@ -10,7 +10,7 @@ using UnityEngine.Rendering;
 public partial class CustomRPAsset : RenderPipelineAsset
 {
     [SerializeField]
-    bool UseDynamicBatching = true, UseGPUInstancing = true, UseSRPBatcher = true, UseLightsPerObject = true;
+    bool UseSRPBatcher = true, UseLightsPerObject = true;
 
     [SerializeField]
     private CameraBufferSettings cameraBufferSettings = new CameraBufferSettings
@@ -44,10 +44,17 @@ public partial class CustomRPAsset : RenderPipelineAsset
     [SerializeField]
     private Shader cameraRenderShader;
     
+    [Header("Deprecated Settings")]
+    [SerializeField, Tooltip("Dynamic batching is no longer used.")]
+    bool useDynamicBatching;
+
+    [SerializeField, Tooltip("GPU instancing is always enabled.")]
+    bool useGPUInstancing;
+    
 
     protected override RenderPipeline CreatePipeline()
     {
-        return new CustomRP(cameraBufferSettings, UseDynamicBatching, UseGPUInstancing, UseSRPBatcher, UseLightsPerObject, shadowSetting, postFXSettings, (int)colorLutResolution, cameraRenderShader);
+        return new CustomRP(cameraBufferSettings, UseSRPBatcher, UseLightsPerObject, shadowSetting, postFXSettings, (int)colorLutResolution, cameraRenderShader);
     }
 
     

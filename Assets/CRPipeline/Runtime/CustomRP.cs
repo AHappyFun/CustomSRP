@@ -16,7 +16,8 @@ public partial class CustomRP: RenderPipeline
     private ScriptableCullingParameters cullingParameters;
     private CullingResults cullResults;
 
-    bool useDynamicBatch, useGPUInstance, useLightsPerObject;
+    //bool useDynamicBatch, useGPUInstance, useLightsPerObject;
+    bool useLightsPerObject;
 
     CameraBufferSettings cameraBufferSettings;
 
@@ -28,12 +29,12 @@ public partial class CustomRP: RenderPipeline
 
     private int colorLUTResolution;
     
-    public CustomRP(CameraBufferSettings cameraBufferSettings, bool useDynamicBatching, bool useGPUInstancing, bool useSRPBatcher, bool useLightsPerObject, ShadowSetting shadowSetting, PostFXSettings postFXSettings, int colorLutResolution, Shader cameraRenderShader)
+    public CustomRP(CameraBufferSettings cameraBufferSettings, bool useSRPBatcher, bool useLightsPerObject, ShadowSetting shadowSetting, PostFXSettings postFXSettings, int colorLutResolution, Shader cameraRenderShader)
     {
         cullResults = new CullingResults();
         
-        this.useDynamicBatch = useDynamicBatching;
-        this.useGPUInstance = useGPUInstancing;
+        //this.useDynamicBatch = useDynamicBatching;
+        //this.useGPUInstance = useGPUInstancing;
         this.shadowSettings = shadowSetting;
         this.postFXSettings = postFXSettings;
         this.useLightsPerObject = useLightsPerObject;
@@ -60,7 +61,7 @@ public partial class CustomRP: RenderPipeline
     {
         foreach (var cam in cameras)
         {
-            renderer.Render(renderGraph, context, cam, cameraBufferSettings, this.useDynamicBatch, this.useGPUInstance, useLightsPerObject, shadowSettings, this.postFXSettings, colorLUTResolution);       
+            renderer.Render(renderGraph, context, cam, cameraBufferSettings, useLightsPerObject, shadowSettings, this.postFXSettings, colorLUTResolution);       
         }
         renderGraph.EndFrame();
     }
