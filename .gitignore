@@ -10,6 +10,9 @@
 /[Ll]ogs/
 /[Mm]emoryCaptures/
 
+Aley_Scene/
+Aley_Scene.meta
+
 # Never ignore Asset meta data
 !/[Aa]ssets/**/*.meta
 

@@ -7,6 +7,7 @@ using UnityEngine.Rendering;
 using Conditional = System.Diagnostics.ConditionalAttribute;
 using UnityEngine.Experimental.GlobalIllumination;
 using LightType = UnityEngine.LightType;
+using UnityEngine.Experimental.Rendering.RenderGraphModule;
 
 //自定义管线类，继承RenderPipeline，主要实现Render方法
 public partial class CustomRP: RenderPipeline
@@ -48,10 +49,20 @@ public partial class CustomRP: RenderPipeline
     //遍历执行Camera的Render方法
     protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras)
     {
+        //foreach (var cam in cameras)
+        //{
+        //    renderer.Render(renderContext, cam, cameraBufferSettings, this.useDynamicBatch, this.useGPUInstance, useLightsPerObject, shadowSettings, this.postFXSettings, colorLUTResolution);       
+        //}
+    }
+
+    //遍历执行Camera的Render方法 新
+    protected override void Render(ScriptableRenderContext context, List<Camera> cameras)
+    {
         foreach (var cam in cameras)
         {
-            renderer.Render(renderContext, cam, cameraBufferSettings, this.useDynamicBatch, this.useGPUInstance, useLightsPerObject, shadowSettings, this.postFXSettings, colorLUTResolution);       
+            renderer.Render(renderGraph, context, cam, cameraBufferSettings, this.useDynamicBatch, this.useGPUInstance, useLightsPerObject, shadowSettings, this.postFXSettings, colorLUTResolution);       
         }
+        renderGraph.EndFrame();
     }
 }
 
@@ -59,6 +70,8 @@ public partial class CustomRP: RenderPipeline
 
 public partial class CustomRP : RenderPipeline
 {
+    private readonly RenderGraph renderGraph = new RenderGraph("CRP RenderGraph");
+    
     partial void InitializeForEditor();
 
     partial void DisposeForEditor();
@@ -68,6 +81,7 @@ public partial class CustomRP : RenderPipeline
         base.Dispose(disposing);
         DisposeForEditor();
         renderer.Dispose();
+        renderGraph.Cleanup();
     }
 
 #if UNITY_EDITOR

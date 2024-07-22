@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
 
 public class Lighting
@@ -36,28 +37,31 @@ public class Lighting
 
     static string lightsPerObjectKeyword = "_LIGHTS_PER_OBJECT";
     
-    const string bufferName = "Lighting";
-    CommandBuffer buffer = new CommandBuffer
-    {
-        name = bufferName
-    };
+    //const string bufferName = "Lighting";
+    //CommandBuffer buffer = new CommandBuffer
+    //{
+    //    name = bufferName
+    //};
+
+    private CommandBuffer buffer;
 
     Shadows shadows = new Shadows();
 
-    public void Setup(ScriptableRenderContext context, CullingResults cullingResults, ShadowSetting shadowSetting, bool useLightsPerobject, int renderingLayerMask)
+    public void Setup(RenderGraphContext context, CullingResults cullingResults, ShadowSetting shadowSetting, bool useLightsPerobject, int renderingLayerMask)
     {
         this.cullingResults = cullingResults;
-
-        buffer.BeginSample(bufferName);
+        buffer = context.cmd;
+        //buffer.BeginSample(bufferName);
+        
         shadows.Setup(context, cullingResults, shadowSetting);
         //灯光数据
         SetupLights(useLightsPerobject, renderingLayerMask);
         //渲染ShadowMap
         shadows.Render();
         
-        buffer.EndSample(bufferName);
+        //buffer.EndSample(bufferName);
 
-        context.ExecuteCommandBuffer(buffer);
+        context.renderContext.ExecuteCommandBuffer(buffer);
         buffer.Clear();
     }
 

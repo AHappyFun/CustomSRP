@@ -1,17 +1,20 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
 
 public partial class PostFXStack
 {
-    private const string bufferName = "PostProcessFX";
+    //private const string bufferName = "PostProcessFX";
     
-    CommandBuffer buffer = new CommandBuffer
-    {
-        name = bufferName
-    };
+    //CommandBuffer buffer = new CommandBuffer
+    //{
+    //    name = bufferName
+    //};
 
-    private ScriptableRenderContext context;
+    private CommandBuffer buffer;
+
+    //private ScriptableRenderContext context;
 
     private Camera camera;
 
@@ -389,13 +392,13 @@ public partial class PostFXStack
         buffer.SetGlobalVector(fxaaConfigID, new Vector4(fxaa.fixedThreshold, fxaa.relativeThreshold, fxaa.subpixelBlending));
     }
 
-    public void Setup(ScriptableRenderContext context, Camera camera, Vector2Int bufferSize, PostFXSettings settings, bool keepAlpha, bool useHDR, int colorLUTResolution, CameraSettings.FinalBlendMode finalBlendMode, CameraBufferSettings.BicubicRescalingMode bicubicRescalingMode, CameraBufferSettings.FXAA fxaa)
+    public void Setup(Camera camera, Vector2Int bufferSize, PostFXSettings settings, bool keepAlpha, bool useHDR, int colorLUTResolution, CameraSettings.FinalBlendMode finalBlendMode, CameraBufferSettings.BicubicRescalingMode bicubicRescalingMode, CameraBufferSettings.FXAA fxaa)
     {
         this.fxaa = fxaa;
         this.bufferSize = bufferSize;
         this.keepAlpha = keepAlpha;
         this.useHDR = useHDR;
-        this.context = context;
+        //this.context = context;
         this.camera = camera;
         this.colorLUTResolution = colorLUTResolution;
         this.settings = camera.cameraType <= CameraType.SceneView ? settings : null;
@@ -404,8 +407,9 @@ public partial class PostFXStack
         ApplySceneViewState();
     }
 
-    public void Render(int sourceID)
+    public void Render(RenderGraphContext context, int sourceID)
     {
+        buffer = context.cmd;
         if (DoBloom(sourceID))
         {
             DoFinal(bloomResultID);
@@ -416,7 +420,7 @@ public partial class PostFXStack
             DoFinal(sourceID);
         }
         
-        context.ExecuteCommandBuffer(buffer);
+        context.renderContext.ExecuteCommandBuffer(buffer);
         buffer.Clear();
     }
 
@@ -426,7 +430,8 @@ public partial class PostFXStack
         buffer.SetRenderTarget(to, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
         buffer.DrawProcedural(Matrix4x4.identity, settings.Mat, (int)pass, MeshTopology.Triangles, 3);
     }
-
+    
+    static Rect fullViewRect = new Rect(0f, 0f, 1f, 1f);
     void DrawFinal(RenderTargetIdentifier from, Pass pass)
     {
         
@@ -435,7 +440,7 @@ public partial class PostFXStack
         
         buffer.SetGlobalTexture(fxSourceID, from);
         buffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget, 
-            finalBlendMode.destination == BlendMode.Zero ? RenderBufferLoadAction.DontCare : RenderBufferLoadAction.Load
+            finalBlendMode.destination == BlendMode.Zero && camera.rect == fullViewRect ? RenderBufferLoadAction.DontCare : RenderBufferLoadAction.Load
             , RenderBufferStoreAction.Store);
         
         buffer.SetViewport(camera.pixelRect);

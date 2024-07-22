@@ -15,7 +15,7 @@
 		_Smoothness("Smoothness",Range(0,1)) = 0.5
     	_Occlusion("Occlusion", Range(0,1)) = 1
     	_Fresnel("Fresnel", Range(0,1)) = 1
-    	
+    	 
     	//base Normal
     	[Toggle(_NORMAL_MAP)]_NormalMapToggle("NormalMap Open", float) = 0
     	[NoScaleOffset]_NormalMap("NormalMap", 2D) = "bump" {}

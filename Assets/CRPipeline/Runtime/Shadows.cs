@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
 
 public class Shadows
@@ -24,15 +25,17 @@ public class Shadows
 
     ShadowedOtherLight[] shadowedOtherLights = new ShadowedOtherLight[maxShadowdOtherLightCount];
 
-    const string bufferName = "ShadowMap";
+    //const string bufferName = "ShadowMap";
 
     const int maxShadowdDirectionalLightCount = 4 , maxCascades = 4;
     const int maxShadowdOtherLightCount = 16;
 
-    CommandBuffer buffer = new CommandBuffer
-    {
-        name = bufferName
-    };
+    //CommandBuffer buffer = new CommandBuffer
+    //{
+    //    name = bufferName
+    //};
+
+    private CommandBuffer buffer;
 
     ScriptableRenderContext context;
 
@@ -99,9 +102,10 @@ public class Shadows
 
     private bool useShadowMask;
 
-    public void Setup(ScriptableRenderContext context, CullingResults cullingResults, ShadowSetting settings)
+    public void Setup(RenderGraphContext context, CullingResults cullingResults, ShadowSetting settings)
     {
-        this.context = context;
+        buffer = context.cmd;
+        this.context = context.renderContext;
         this.cullingResults = cullingResults;
         this.settings = settings;
         ShadowedDirectionLightCount = 0;
@@ -242,7 +246,7 @@ public class Shadows
         
         //---------------
         
-        buffer.BeginSample(bufferName);
+        //buffer.BeginSample(bufferName);
         SetKeywords(shadowMaskKeywords, useShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
         
         //各个灯都需要的数据 
@@ -254,7 +258,7 @@ public class Shadows
         
         buffer.SetGlobalVector(shadowAtlasSizeId, atlasSizes);
         
-        buffer.EndSample(bufferName);
+        //buffer.EndSample(bufferName);
         ExecuteBuffer();
     }
 
@@ -274,7 +278,7 @@ public class Shadows
         //平行光开启ShadowPanck
         buffer.SetGlobalFloat(shadowPancakingId, 1f);
 
-        buffer.BeginSample(bufferName);
+        buffer.BeginSample("DirectionalShadows");
         ExecuteBuffer();
         
         //ShadowMap划分Tile 4x4
@@ -294,7 +298,7 @@ public class Shadows
         SetKeywords(cascadeBlendKeywords, (int)settings.directional.cascadeBlend - 1);
 
         
-        buffer.EndSample(bufferName);
+        buffer.EndSample("DirectionalShadows");
         ExecuteBuffer();
     }
 
@@ -307,7 +311,7 @@ public class Shadows
     void RenderDirectionalShadows(int dirLightIndex, int split, int tileSize)
     {
         ShadowedDirectionalLight light = shadowedDirectionLights[dirLightIndex];
-        var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex)
+        var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex, BatchCullingProjectionType.Orthographic)
         {
             useRenderingLayerMaskTest = true
         };
@@ -365,7 +369,7 @@ public class Shadows
         
         buffer.SetGlobalFloat(shadowPancakingId, 0f);
 
-        buffer.BeginSample(bufferName);
+        buffer.BeginSample("OtherLightShadows");
         ExecuteBuffer();
         
         //ShadowMap划分Tile 4x4
@@ -390,7 +394,7 @@ public class Shadows
         buffer.SetGlobalVectorArray(otherShadowTilesId, otherShadowTiles);
         SetKeywords(otherFilerKeywords, (int)settings.other.filter - 1);
         
-        buffer.EndSample(bufferName);
+        buffer.EndSample("OtherLightShadows");
         ExecuteBuffer();
     }
 
@@ -398,7 +402,7 @@ public class Shadows
     void RenderSpotShadows(int index, int split, int tileSize)
     {
         ShadowedOtherLight light = shadowedOtherLights[index];
-        var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex)
+        var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex, BatchCullingProjectionType.Perspective)
         {
             useRenderingLayerMaskTest = true
         };
@@ -436,7 +440,7 @@ public class Shadows
     void RenderPointShadows(int index, int split, int tileSize)
     {
         ShadowedOtherLight light = shadowedOtherLights[index];
-        var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex)
+        var shadowSettings = new ShadowDrawingSettings(cullingResults, light.visibleLightIndex, BatchCullingProjectionType.Perspective)
         {
             useRenderingLayerMaskTest = true
         };

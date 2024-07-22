@@ -48,9 +48,12 @@ CBUFFER_START(UnityPerFrame)
 	float4x4 unity_MatrixVP;  //每个摄像机绘制的时候有一个，同一摄像机共用
 CBUFFER_END
 
- float4x4 unity_MatrixV;
- float4x4 glstate_matrix_projection;
+    float4x4 unity_MatrixV;
+    float4x4 unity_MatrixInvV;
+    float4x4 unity_prev_MatrixM;
+    float4x4 unity_prev_MatrixIM;
+    float4x4 glstate_matrix_projection;
 
- float3 _WorldSpaceCameraPos;
+	float3 _WorldSpaceCameraPos;
 
 #endif 

@@ -1,13 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Experimental.Rendering.RenderGraphModule;
 
 public class CameraRenderer
 {
     ScriptableRenderContext context;
 
-    Camera camera;
+    public Camera camera;
 
     static Material errorMat;
 
@@ -33,16 +35,16 @@ public class CameraRenderer
     };
 
     //private static int frameBufferID = Shader.PropertyToID("_CameraFrameBuffer");
-    private static int bufferSizeID = Shader.PropertyToID("_CameraBufferSize");
-    private static int colorAttachmentID = Shader.PropertyToID("_CameraColorAttachment");
-    private static int depthAttachmentID = Shader.PropertyToID("_CameraDepthAttachment");
-    private static int colorTextureID = Shader.PropertyToID("_CameraColorTexture");
-    private static int depthTextureID = Shader.PropertyToID("_CameraDepthTexture");
-    private static int sourceTextureID = Shader.PropertyToID("_SourceTexture");
-    private static int srcBlendID = Shader.PropertyToID("_CameraSrcBlend");
-    private static int dstBlendID = Shader.PropertyToID("_CameraDstBlend");
+    public static int bufferSizeID = Shader.PropertyToID("_CameraBufferSize");
+    public static int colorAttachmentID = Shader.PropertyToID("_CameraColorAttachment");
+    public static int depthAttachmentID = Shader.PropertyToID("_CameraDepthAttachment");
+    public static int colorTextureID = Shader.PropertyToID("_CameraColorTexture");
+    public static int depthTextureID = Shader.PropertyToID("_CameraDepthTexture");
+    public static int sourceTextureID = Shader.PropertyToID("_SourceTexture");
+    public static int srcBlendID = Shader.PropertyToID("_CameraSrcBlend");
+    public static int dstBlendID = Shader.PropertyToID("_CameraDstBlend");
 
-    private bool useColorTexture, useDepthTexture, useIntermediateBuffer;
+    public bool useColorTexture, useDepthTexture, useIntermediateBuffer;
 
     private static bool copyTextureSupported = SystemInfo.copyTextureSupport > CopyTextureSupport.None;
     
@@ -50,7 +52,9 @@ public class CameraRenderer
 #if UNITY_EDITOR
     string sampleName = bufferName;
 #endif
-    private CommandBuffer commandBuffer = new CommandBuffer { name = bufferName };
+    //private CommandBuffer commandBuffer = new CommandBuffer { name = bufferName };
+
+    private CommandBuffer commandBuffer;
 
     private Material material;
 
@@ -78,13 +82,15 @@ public class CameraRenderer
         CoreUtils.Destroy(missingTexture);
     }
 
-    public void Render(ScriptableRenderContext ctx, Camera cam, CameraBufferSettings cameraBufferSettings, bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject ,ShadowSetting shadowSetting, PostFXSettings postFXSettings, int colorLUTResolution)
+    public void Render(RenderGraph renderGraph, ScriptableRenderContext ctx, Camera cam, CameraBufferSettings cameraBufferSettings, bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject ,ShadowSetting shadowSetting, PostFXSettings postFXSettings, int colorLUTResolution)
     {
         context = ctx;
         camera = cam;
 
+
         var crpCamera = camera.GetComponent<CustomRenderPipelineCamera>();
         CameraSettings cameraSettings = crpCamera ? crpCamera.Settings : defaultCameraSettings;
+        ProfilingSampler cameraSampler = crpCamera ? crpCamera.Sampler : ProfilingSampler.Get(cam.cameraType);
         
         if (camera.cameraType == CameraType.Reflection)
         {
@@ -107,7 +113,7 @@ public class CameraRenderer
         useScaledRendering = renderScale < 0.99f || renderScale > 1.0f;
         
 #if UNITY_EDITOR
-        PrepareCameraBuffer();
+        //PrepareCameraBuffer();
 #endif
 
         PrepareUIForSceneWindow();
@@ -131,59 +137,103 @@ public class CameraRenderer
             bufferSize.y = camera.pixelHeight;
         }
         
-        commandBuffer.BeginSample(sampleName);
+        //commandBuffer.BeginSample(sampleName);
         
-        commandBuffer.SetGlobalVector(bufferSizeID, new Vector4(1f/bufferSize.x, 1f/bufferSize.y, bufferSize.x, bufferSize.y));
+        //commandBuffer.SetGlobalVector(bufferSizeID, new Vector4(1f/bufferSize.x, 1f/bufferSize.y, bufferSize.x, bufferSize.y));
         
-        ExecuteBuffer();
+        //ExecuteBuffer();
         //设置灯光数据、绘制ShadowMap
-        lighting.Setup(context, cullingResults, shadowSetting, useLightsPerObject, cameraSettings.maskLights ? cameraSettings.renderingLayerMask : -1);
+        //lighting.Setup(context, cullingResults, shadowSetting, useLightsPerObject, cameraSettings.maskLights ? cameraSettings.renderingLayerMask : -1);
 
         cameraBufferSettings.fxaa.enabled &= cameraSettings.allowFXAA;
-        postFXStack.Setup(context, cam, bufferSize, postFXSettings, cameraSettings.keepAlpha, useHDR, colorLUTResolution, cameraSettings.finalBlendMode, cameraBufferSettings.bicubicRescalingMode, cameraBufferSettings.fxaa);
+        postFXStack.Setup(cam, bufferSize, postFXSettings, cameraSettings.keepAlpha, useHDR, colorLUTResolution, cameraSettings.finalBlendMode, cameraBufferSettings.bicubicRescalingMode, cameraBufferSettings.fxaa);
         
-        commandBuffer.EndSample(sampleName);
+        //commandBuffer.EndSample(sampleName);
 
         //摄像机渲染物体相关设置
-        Setup();
+        //Setup();
 
         //画可见几何体
-        DrawVisableGeometry(useDynamicBatch, useGPUIInstance, useLightsPerObject, cameraSettings.renderingLayerMask);
-
+        //DrawVisableGeometry(useDynamicBatch, useGPUIInstance, useLightsPerObject, cameraSettings.renderingLayerMask);
+        
         //画错误shader
-        DrawUnsupportShaders();
+        //DrawUnsupportShaders();
+        
+        //画Gizmos Pre
+        //DrawGizmosBeforePostProcess();
+        
+        //后处理
+        //if (postFXStack.IsActive)
+        //{
+        //    postFXStack.Render(colorAttachmentID);
+        //}
+        //else if (useIntermediateBuffer)
+        //{
+        //    DrawFinal(cameraSettings.finalBlendMode);
+        //    ExecuteBuffer();
+        //}
+        
+        //画Gizmos Post
+        //DrawGizmosAfterPostProcess();
 
-        //画Gizmos
-        DrawGizmosBeforePostProcess();
-        
-        //叠加后处理
-        if (postFXStack.IsActive)
+        //var cameraSampler = new ProfilingSampler(cam.name);
+        var renderGraphParameters = new RenderGraphParameters
         {
-            postFXStack.Render(colorAttachmentID);
-        }
-        else if (useIntermediateBuffer)
-        {
-            DrawFinal(cameraSettings.finalBlendMode);
-            ExecuteBuffer();
-        }
+            commandBuffer = CommandBufferPool.Get(),
+            currentFrameIndex = Time.frameCount,
+            executionName = cameraSampler.name,
+            scriptableRenderContext = context
+        };
+
+        commandBuffer = renderGraphParameters.commandBuffer;
         
-        DrawGizmosAfterPostProcess();
+        useIntermediateBuffer = useScaledRendering || useColorTexture || useDepthTexture || postFXStack.IsActive;
+        
+        using (renderGraph.RecordAndExecute(renderGraphParameters))
+        {
+            using var _ = new RenderGraphProfilingScope(renderGraph, cameraSampler);
+            
+            //设置灯光数据、绘制ShadowMap
+            LightingPass.Record(renderGraph, lighting, cullingResults, shadowSetting, useLightsPerObject, cameraSettings.maskLights ? cameraSettings.renderingLayerMask : -1);
+            
+            //摄像机渲染物体相关设置
+            SetupPass.Record(renderGraph, this);
+            
+            //画可见几何体
+            VisibleGeometryPass.Record(renderGraph, this, useDynamicBatch, useGPUIInstance, useLightsPerObject, cameraSettings.renderingLayerMask);
+            
+            //画错误shader
+            UnsupportedShadersPass.Record(renderGraph, this);
+            
+            //后处理
+            if (postFXStack.IsActive)
+            {
+                PostFXPass.Record(renderGraph, postFXStack);
+            }
+            else if (useIntermediateBuffer)
+            {
+                FinalPass.Record(renderGraph, this, cameraSettings.finalBlendMode);
+            }
+            GizmosPass.Record(renderGraph, this);
+        }
 
         //清理RT等资源
         Cleanup();
 
         Submit();
+        
+        CommandBufferPool.Release(renderGraphParameters.commandBuffer);
     }
 
     
-    void Setup()
+    public void Setup()
     {
         //设置摄像机的MVP矩阵以及其他属性
         context.SetupCameraProperties(camera);
 
         CameraClearFlags clearFlags = camera.clearFlags;
 
-        useIntermediateBuffer = useScaledRendering || useColorTexture || useDepthTexture || postFXStack.IsActive;
+        //useIntermediateBuffer = useScaledRendering || useColorTexture || useDepthTexture || postFXStack.IsActive;
 
         if (useIntermediateBuffer)
         {
@@ -200,7 +250,7 @@ public class CameraRenderer
         }
 
         //commandBuffer里注入样本，可以在Profiler和FrameDebugger里看到，需要有开始和结束
-        commandBuffer.BeginSample(bufferName);
+        //commandBuffer.BeginSample(bufferName);
         
         commandBuffer.SetGlobalTexture(colorTextureID, missingTexture);
         commandBuffer.SetGlobalTexture(depthTextureID, missingTexture);
@@ -208,9 +258,11 @@ public class CameraRenderer
         //渲染前ClearRT设置  是否清除Depth、Color、Stencil三个buffer
         commandBuffer.ClearRenderTarget(
             clearFlags <= CameraClearFlags.Depth,
-            clearFlags == CameraClearFlags.Color,
+            clearFlags <= CameraClearFlags.Color,
             clearFlags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear
         );
+        
+        commandBuffer.SetGlobalVector(bufferSizeID, new Vector4(1f/bufferSize.x, 1f/bufferSize.y, bufferSize.x, bufferSize.y));
 
         ExecuteBuffer();
 
@@ -219,9 +271,11 @@ public class CameraRenderer
     /// <summary>
     /// 画几何体
     /// </summary>
-    void DrawVisableGeometry(bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject, int renderingLayerMask)
+    public void DrawVisableGeometry(bool useDynamicBatch, bool useGPUIInstance, bool useLightsPerObject, int renderingLayerMask)
     {
 
+        ExecuteBuffer();
+        
         PerObjectData lightsPerObjectsFlags =
             useLightsPerObject ? PerObjectData.LightData | PerObjectData.LightIndices : PerObjectData.None;
         
@@ -269,7 +323,7 @@ public class CameraRenderer
     /// <summary>
     /// 画错误的shader
     /// </summary>
-    void DrawUnsupportShaders()
+    public void DrawUnsupportShaders()
     {
         if (!errorMat)
         {
@@ -318,7 +372,12 @@ public class CameraRenderer
     void DrawGizmosAfterPostProcess()
     {
         if (UnityEditor.Handles.ShouldRenderGizmos())
-        {
+        {           
+            //if (postFXStack.IsActive)
+            //{
+            //    Draw(depthAttachmentID, BuiltinRenderTextureType.CameraTarget, true);
+            //    ExecuteBuffer();
+            //}
             context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
         }
     }
@@ -335,14 +394,14 @@ public class CameraRenderer
 
     void Submit()
     {
-        commandBuffer.EndSample(bufferName);
+        //commandBuffer.EndSample(bufferName);
 
         ExecuteBuffer();
 
         context.Submit();
     }
 
-    void ExecuteBuffer()
+    public void ExecuteBuffer()
     {
         //执行和清除buffer通常在一起
         context.ExecuteCommandBuffer(commandBuffer);
@@ -410,14 +469,16 @@ public class CameraRenderer
         ExecuteBuffer();
     }
 
-    void Draw(RenderTargetIdentifier from, RenderTargetIdentifier to, bool isDepth = false)
+    public void Draw(RenderTargetIdentifier from, RenderTargetIdentifier to, bool isDepth = false)
     {
         commandBuffer.SetGlobalTexture(sourceTextureID, from);
         commandBuffer.SetRenderTarget(to, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
         commandBuffer.DrawProcedural(Matrix4x4.identity, material, isDepth ? 1 : 0, MeshTopology.Triangles, 3);
     }
     
-    void DrawFinal(CameraSettings.FinalBlendMode finalBlendMode)
+    static Rect fullViewRect = new Rect(0f, 0f, 1f, 1f);
+    
+    public void DrawFinal(CameraSettings.FinalBlendMode finalBlendMode)
     {
         
         commandBuffer.SetGlobalFloat(srcBlendID, (float)finalBlendMode.source);
@@ -426,7 +487,7 @@ public class CameraRenderer
         commandBuffer.SetGlobalTexture(sourceTextureID, colorAttachmentID);
         
         commandBuffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget, 
-            finalBlendMode.destination == BlendMode.Zero ? RenderBufferLoadAction.DontCare : RenderBufferLoadAction.Load
+            finalBlendMode.destination == BlendMode.Zero && camera.rect == fullViewRect ? RenderBufferLoadAction.DontCare : RenderBufferLoadAction.Load
             , RenderBufferStoreAction.Store);
         
         commandBuffer.SetViewport(camera.pixelRect);
