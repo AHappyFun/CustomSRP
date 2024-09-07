@@ -85,7 +85,7 @@ public partial class PostFXStack
     
     private const int maxBloomPyramidLevels = 16;
     private int bloomPyramidID;
-    bool DoBloom(int sourceID)
+    bool DoBloom(RenderTargetIdentifier sourceID)
     {
 
         PostFXSettings.BloomSettings bloom = settings.Bloom;
@@ -267,7 +267,7 @@ public partial class PostFXStack
         );
     }
 
-    void DoFinal(int sourceID)
+    void DoFinal(RenderTargetIdentifier sourceID)
     {
         ConfigureColorAdjustments();
         ConfigureWhiteBalance();
@@ -291,7 +291,7 @@ public partial class PostFXStack
     //---tonemapping----
     private int colorLUTResolution;
     
-    void DoToneMapping(int sourceID)
+    void DoToneMapping(RenderTargetIdentifier sourceID)
     {
         PostFXSettings.ToneMappingSettings.Mode mode = settings.ToneMapping.mode;
         Pass pass =  Pass.ToneMappingNone + (int)mode;
@@ -407,7 +407,7 @@ public partial class PostFXStack
         ApplySceneViewState();
     }
 
-    public void Render(RenderGraphContext context, int sourceID)
+    public void Render(RenderGraphContext context, TextureHandle sourceID)
     {
         buffer = context.cmd;
         if (DoBloom(sourceID))
