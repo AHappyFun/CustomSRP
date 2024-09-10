@@ -5,6 +5,9 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Experimental.Rendering.RenderGraphModule;
 
+/// <summary>
+/// 核心Class，RenderPipeline调用Render方法
+/// </summary>
 public class CameraRenderer
 {
     ScriptableRenderContext context;
@@ -21,18 +24,18 @@ public class CameraRenderer
     //private bool useHDR;
     
     //private static int frameBufferID = Shader.PropertyToID("_CameraFrameBuffer");
-    public static int bufferSizeID = Shader.PropertyToID("_CameraBufferSize");
-    public static int colorAttachmentID = Shader.PropertyToID("_CameraColorAttachment");
-    public static int depthAttachmentID = Shader.PropertyToID("_CameraDepthAttachment");
-    public static int colorTextureID = Shader.PropertyToID("_CameraColorTexture");
-    public static int depthTextureID = Shader.PropertyToID("_CameraDepthTexture");
-    public static int sourceTextureID = Shader.PropertyToID("_SourceTexture");
-    public static int srcBlendID = Shader.PropertyToID("_CameraSrcBlend");
-    public static int dstBlendID = Shader.PropertyToID("_CameraDstBlend");
+    //public static int bufferSizeID = Shader.PropertyToID("_CameraBufferSize");
+    //public static int colorAttachmentID = Shader.PropertyToID("_CameraColorAttachment");
+    //public static int depthAttachmentID = Shader.PropertyToID("_CameraDepthAttachment");
+    //public static int colorTextureID = Shader.PropertyToID("_CameraColorTexture");
+    //public static int depthTextureID = Shader.PropertyToID("_CameraDepthTexture");
+    //public static int sourceTextureID = Shader.PropertyToID("_SourceTexture");
+    //public static int srcBlendID = Shader.PropertyToID("_CameraSrcBlend");
+    //public static int dstBlendID = Shader.PropertyToID("_CameraDstBlend");
 
     //public bool useColorTexture, useDepthTexture, useIntermediateBuffer;
 
-    private static bool copyTextureSupported = SystemInfo.copyTextureSupport > CopyTextureSupport.None;
+   // private static bool copyTextureSupported = SystemInfo.copyTextureSupport > CopyTextureSupport.None;
     
     const string bufferName = "---Render Camera---";
 #if UNITY_EDITOR
@@ -154,6 +157,7 @@ public class CameraRenderer
         //是否使用中间Buffer，就是是否拷贝深度和Color在中间用
         bool useIntermediateBuffer = useScaledRendering || useColorTexture || useDepthTexture || postFXStack.IsActive;
         
+        //改用RenderGraph
         using (renderGraph.RecordAndExecute(renderGraphParameters))
         {
             using var _ = new RenderGraphProfilingScope(renderGraph, cameraSampler);
@@ -164,24 +168,17 @@ public class CameraRenderer
             //摄像机渲染物体相关设置
             CameraRendererTextures textures = SetupPass.Record(renderGraph,useIntermediateBuffer, useColorTexture, useDepthTexture, useHDR, bufferSize, camera);
             
-            //画可见几何体，被下面不透明skybox透明替换
-            //VisibleGeometryPass.Record(renderGraph, this, useDynamicBatch, useGPUIInstance, useLightsPerObject, cameraSettings.renderingLayerMask);
-            
-            //画不透明
+            //画不透明几何
             GeometryPass.Record(renderGraph, cam, cullingResults, useLightsPerObject, cameraSettings.renderingLayerMask, true, textures);
             
-            //画Skybox
+            //画Skybox几何
             SkyboxPass.Record(renderGraph, cam, textures);
-
-
-            //if (useColorTexture || useDepthTexture)
-            //{
-            //}
-            //Copy Color and Depth
+            
+            //Copy Color and Depth ，复制中间Buffer。复制的操作不会在FrameBuffer显示，会在RenderDoc显示。
             var copier = new CameraRendererCopier(material, camera, cameraSettings.finalBlendMode);
             CopyAttachmentsPass.Record(renderGraph, useColorTexture, useDepthTexture, copier, textures);
             
-            //半透明
+            //画半透明几何
             GeometryPass.Record(renderGraph, cam, cullingResults, useLightsPerObject, cameraSettings.renderingLayerMask, false, textures);
             
             //画错误shader
@@ -196,7 +193,8 @@ public class CameraRenderer
             {
                 FinalPass.Record(renderGraph, copier, textures);
             }
-            //Gizmos
+            
+            //画Gizmos
             GizmosPass.Record(renderGraph, useIntermediateBuffer, copier, textures);
         }
 

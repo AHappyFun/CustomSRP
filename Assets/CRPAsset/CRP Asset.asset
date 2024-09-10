@@ -12,8 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6df75aa7aa75964b88db1505778cb2b, type: 3}
   m_Name: CRP Asset
   m_EditorClassIdentifier: 
-  UseDynamicBatching: 0
-  UseGPUInstancing: 0
   UseSRPBatcher: 0
   UseLightsPerObject: 0
   cameraBufferSettings:
@@ -22,14 +20,14 @@ MonoBehaviour:
     copyColorReflections: 0
     copyDepth: 1
     copyDepthReflections: 0
-    renderScale: 1
+    renderScale: 1.49
     bicubicRescalingMode: 2
     fxaa:
       enabled: 1
       fixedThreshold: 0.052
       relativeThreshold: 0.166
       subpixelBlending: 0.455
-      quality: 0
+      quality: 2
   shadowSetting:
     maxDistance: 80
     distanceFade: 0.133
@@ -47,7 +45,9 @@ MonoBehaviour:
       cascadeBlend: 1
     other:
       atlasSize: 1024
-      filter: 0
+      filter: 1
   postFXSettings: {fileID: 11400000, guid: 7242ea67d7b631148908c144678c6c95, type: 2}
   colorLutResolution: 64
   cameraRenderShader: {fileID: 4800000, guid: 8a29b903ee724b649ccb2cd4366f2d6a, type: 3}
+  useDynamicBatching: 0
+  useGPUInstancing: 0

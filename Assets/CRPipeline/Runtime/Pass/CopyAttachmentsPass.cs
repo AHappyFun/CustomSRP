@@ -82,6 +82,9 @@ public readonly struct CameraRendererCopier
 
 }
 
+/// <summary>
+/// Copy Attachments Pass，复制Color和Depth到Texture，用于其他阶段使用。
+/// </summary>
 public class CopyAttachmentsPass
 {
     private static readonly ProfilingSampler sampler = new ProfilingSampler("Copy Attachments Pass");
