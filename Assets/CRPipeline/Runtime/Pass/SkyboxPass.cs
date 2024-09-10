@@ -25,7 +25,7 @@ public class SkyboxPass
             pass.camera = camera;
             builder.ReadWriteTexture(textures.colorAttachment);
             builder.ReadWriteTexture(textures.depthAttachment);
-            builder.SetRenderFunc<SkyboxPass>((pass, context) => pass.Render(context));
+            builder.SetRenderFunc<SkyboxPass>(static(pass, context) => pass.Render(context));
         }
     }
 

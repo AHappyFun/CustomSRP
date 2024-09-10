@@ -98,6 +98,8 @@ public class CameraRenderer
                 postFXSettings = cameraSettings.postFXSettings;
         }
 
+        bool enablePostFX = postFXSettings != null && postFXSettings.IsSupportPostFX(camera) && postFXSettings.Active;
+
         float renderScale = cameraSettings.GetRenderScale(cameraBufferSettings.renderScale);
         bool useScaledRendering = renderScale < 0.99f || renderScale > 1.0f;
         
@@ -127,7 +129,9 @@ public class CameraRenderer
         CullingResults cullingResults = context.Cull(ref scriptableCullingParameters);
         
         //--------------
-        bool useHDR = cameraBufferSettings.allowHDR && camera.allowHDR;
+        cameraBufferSettings.allowHDR &= camera.allowHDR;
+        bool useHDR = cameraBufferSettings.allowHDR;
+        
         Vector2Int bufferSize = default;
         if (useScaledRendering)
         {
@@ -142,7 +146,7 @@ public class CameraRenderer
         }
 
         cameraBufferSettings.fxaa.enabled &= cameraSettings.allowFXAA;
-        postFXStack.Setup(cam, bufferSize, postFXSettings, cameraSettings.keepAlpha, useHDR, colorLUTResolution, cameraSettings.finalBlendMode, cameraBufferSettings.bicubicRescalingMode, cameraBufferSettings.fxaa);
+        //postFXStack.Setup(cam, bufferSize, postFXSettings, cameraSettings.keepAlpha, useHDR, colorLUTResolution, cameraSettings.finalBlendMode, cameraBufferSettings.bicubicRescalingMode, cameraBufferSettings.fxaa);
 
         //var cameraSampler = new ProfilingSampler(cam.name);
         var renderGraphParameters = new RenderGraphParameters
@@ -155,7 +159,7 @@ public class CameraRenderer
         };
         
         //是否使用中间Buffer，就是是否拷贝深度和Color在中间用
-        bool useIntermediateBuffer = useScaledRendering || useColorTexture || useDepthTexture || postFXStack.IsActive;
+        bool useIntermediateBuffer = useScaledRendering || useColorTexture || useDepthTexture || enablePostFX;
         
         //改用RenderGraph
         using (renderGraph.RecordAndExecute(renderGraphParameters))
@@ -185,9 +189,14 @@ public class CameraRenderer
             UnsupportedShadersPass.Record(renderGraph, cam, cullingResults);
             
             //后处理
-            if (postFXStack.IsActive)
+            if (enablePostFX)
             {
-                PostFXPass.Record(renderGraph, postFXStack, camTextures);
+                postFXStack.BufferSettings = cameraBufferSettings;
+                postFXStack.BufferSize = bufferSize;
+                postFXStack.Camera = camera;
+                postFXStack.FinalBlendMode = cameraSettings.finalBlendMode;
+                postFXStack.Settings = postFXSettings;
+                PostFXPass.Record(renderGraph, postFXStack, colorLUTResolution, cameraSettings.keepAlpha, camTextures);
             }
             else if (useIntermediateBuffer)
             {
@@ -195,7 +204,7 @@ public class CameraRenderer
             }
             
             //画Gizmos
-           // GizmosPass.Record(renderGraph, useIntermediateBuffer, copier, camTextures);
+            GizmosPass.Record(renderGraph, useIntermediateBuffer, copier, camTextures);
         }
 
         //清理RT等资源

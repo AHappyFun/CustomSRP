@@ -157,7 +157,7 @@ public class CopyAttachmentsPass
                 pass.depthCopy = builder.WriteTexture(textures.depthCopy);
             }
            
-            builder.SetRenderFunc<CopyAttachmentsPass>((pass, context) => pass.Render(context));
+            builder.SetRenderFunc<CopyAttachmentsPass>(static (pass, context) => pass.Render(context));
         }
         
        

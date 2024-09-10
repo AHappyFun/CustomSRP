@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 
@@ -28,6 +29,19 @@ public class PostFXSettings : ScriptableObject
     private bool IsActive;
 
     public bool Active => IsActive;
+
+    //是否开启Post
+    public bool IsSupportPostFX(Camera camera)
+    {
+        #if UNITY_EDITOR
+        if (camera.cameraType == CameraType.SceneView &&
+            !SceneView.currentDrawingSceneView.sceneViewState.showImageEffects)
+        {
+            return false;
+        }
+        #endif
+        return camera.cameraType <= CameraType.SceneView;
+    }
     
 
     //Bloom

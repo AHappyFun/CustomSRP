@@ -17,7 +17,7 @@ public class LightingPass
         
         pass.lighting.Setup(cullingResults, shadowSetting, useLightsPerObject, renderingLayerMask);
 
-        builder.SetRenderFunc<LightingPass>((pass, context) => pass.Render(context));
+        builder.SetRenderFunc<LightingPass>(static(pass, context) => pass.Render(context));
         
         builder.AllowPassCulling(false);
 
