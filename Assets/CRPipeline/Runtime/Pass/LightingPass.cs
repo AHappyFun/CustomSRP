@@ -4,30 +4,23 @@ using UnityEngine.Rendering;
 
 public class LightingPass
 {
-    private Lighting lighting;
-
-    private CullingResults cullingResults;
-
-    private ShadowSetting shadowSetting;
-
-    private bool useLightsPerObject;
-
-    private int renderingLayerMask;
+    private Lighting lighting = new Lighting();
     
-    private static readonly ProfilingSampler sampler = new ProfilingSampler("Lighting Pass");
+    private static readonly ProfilingSampler sampler = new ProfilingSampler("Lighting ShadowMap Pass");
 
-    void Render(RenderGraphContext context) => lighting.Setup(context, cullingResults, shadowSetting,
-        useLightsPerObject, renderingLayerMask);
+    void Render(RenderGraphContext context) => lighting.Render(context);
 
-    public static void Record(RenderGraph renderGraph, Lighting lighting, CullingResults cullingResults,
+    public static ShadowTextures Record(RenderGraph renderGraph, CullingResults cullingResults,
         ShadowSetting shadowSetting, bool useLightsPerObject, int renderingLayerMask)
     {
         using RenderGraphBuilder builder = renderGraph.AddRenderPass(sampler.name, out LightingPass pass, sampler);
-        pass.lighting = lighting;
-        pass.cullingResults = cullingResults;
-        pass.shadowSetting = shadowSetting;
-        pass.useLightsPerObject = useLightsPerObject;
-        pass.renderingLayerMask = renderingLayerMask;
+        
+        pass.lighting.Setup(cullingResults, shadowSetting, useLightsPerObject, renderingLayerMask);
+
         builder.SetRenderFunc<LightingPass>((pass, context) => pass.Render(context));
+        
+        builder.AllowPassCulling(false);
+
+        return pass.lighting.GetShadowTextures(renderGraph, builder);
     }
 }

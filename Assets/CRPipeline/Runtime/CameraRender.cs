@@ -163,23 +163,23 @@ public class CameraRenderer
             using var _ = new RenderGraphProfilingScope(renderGraph, cameraSampler);
             
             //设置灯光数据、绘制ShadowMap
-            LightingPass.Record(renderGraph, lighting, cullingResults, shadowSetting, useLightsPerObject, cameraSettings.maskLights ? cameraSettings.renderingLayerMask : -1);
+            ShadowTextures shadowTextures = LightingPass.Record(renderGraph, cullingResults, shadowSetting, useLightsPerObject, cameraSettings.maskLights ? cameraSettings.renderingLayerMask : -1);
             
             //摄像机渲染物体相关设置
-            CameraRendererTextures textures = SetupPass.Record(renderGraph,useIntermediateBuffer, useColorTexture, useDepthTexture, useHDR, bufferSize, camera);
+            CameraRendererTextures camTextures = SetupPass.Record(renderGraph,useIntermediateBuffer, useColorTexture, useDepthTexture, useHDR, bufferSize, camera);
             
             //画不透明几何
-            GeometryPass.Record(renderGraph, cam, cullingResults, useLightsPerObject, cameraSettings.renderingLayerMask, true, textures);
+            GeometryPass.Record(renderGraph, cam, cullingResults, useLightsPerObject, cameraSettings.renderingLayerMask, true, camTextures, shadowTextures);
             
             //画Skybox几何
-            SkyboxPass.Record(renderGraph, cam, textures);
+            SkyboxPass.Record(renderGraph, cam, camTextures);
             
             //Copy Color and Depth ，复制中间Buffer。复制的操作不会在FrameBuffer显示，会在RenderDoc显示。
             var copier = new CameraRendererCopier(material, camera, cameraSettings.finalBlendMode);
-            CopyAttachmentsPass.Record(renderGraph, useColorTexture, useDepthTexture, copier, textures);
+            CopyAttachmentsPass.Record(renderGraph, useColorTexture, useDepthTexture, copier, camTextures);
             
             //画半透明几何
-            GeometryPass.Record(renderGraph, cam, cullingResults, useLightsPerObject, cameraSettings.renderingLayerMask, false, textures);
+            GeometryPass.Record(renderGraph, cam, cullingResults, useLightsPerObject, cameraSettings.renderingLayerMask, false, camTextures, shadowTextures);
             
             //画错误shader
             UnsupportedShadersPass.Record(renderGraph, cam, cullingResults);
@@ -187,15 +187,15 @@ public class CameraRenderer
             //后处理
             if (postFXStack.IsActive)
             {
-                PostFXPass.Record(renderGraph, postFXStack, textures);
+                PostFXPass.Record(renderGraph, postFXStack, camTextures);
             }
             else if (useIntermediateBuffer)
             {
-                FinalPass.Record(renderGraph, copier, textures);
+                FinalPass.Record(renderGraph, copier, camTextures);
             }
             
             //画Gizmos
-            GizmosPass.Record(renderGraph, useIntermediateBuffer, copier, textures);
+           // GizmosPass.Record(renderGraph, useIntermediateBuffer, copier, camTextures);
         }
 
         //清理RT等资源

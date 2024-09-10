@@ -4,6 +4,17 @@ using UnityEngine;
 using UnityEngine.Experimental.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
 
+public readonly ref struct ShadowTextures
+{
+    public readonly TextureHandle directionalAtlas, otherAtlas;
+
+    public ShadowTextures(TextureHandle directionalAtlas, TextureHandle otherAtlas)
+    {
+        this.directionalAtlas = directionalAtlas;
+        this.otherAtlas = otherAtlas;
+    }
+}
+
 public class Shadows
 {
     struct ShadowedDirectionalLight
@@ -35,13 +46,15 @@ public class Shadows
     //    name = bufferName
     //};
 
+    private TextureHandle directionalShadowAtlas, otherShadowAtlas;
+
     private CommandBuffer buffer;
 
     ScriptableRenderContext context;
 
     CullingResults cullingResults;
 
-    ShadowSetting settings;
+    public ShadowSetting settings;
 
     static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
     static int dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
@@ -53,7 +66,7 @@ public class Shadows
     static int shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
     static int shadowPancakingId = Shader.PropertyToID("_ShadowPancaking");  //ShadowPancking 阴影平坠开关
 
-    private static int pcssShadowLightWidthId = Shader.PropertyToID("_PCSSLightWidth");
+    public static int pcssShadowLightWidthId = Shader.PropertyToID("_PCSSLightWidth");
 
     static int otherShadowAtlasId = Shader.PropertyToID("_OtherShadowAtlas");
     static int otherShadowMatricesId = Shader.PropertyToID("_OtherShadowMatrices");
@@ -70,60 +83,75 @@ public class Shadows
     //x: atlasSize y: 1/atlasSize
     Vector4 atlasSizes;
 
-    private static string[] directionalFilterKeywords =
+    private static GlobalKeyword[] directionalFilterKeywords =
     {
-        "_DIRECTIONAL_PCF3",
-        "_DIRECTIONAL_PCF5",
-        "_DIRECTIONAL_PCF7"
+        GlobalKeyword.Create("_DIRECTIONAL_PCF3") ,
+        GlobalKeyword.Create("_DIRECTIONAL_PCF5"),
+        GlobalKeyword.Create("_DIRECTIONAL_PCF7")
     };
 
     //级联渐变方式
-    private static string[] cascadeBlendKeywords =
+    private static GlobalKeyword[] cascadeBlendKeywords =
     {
-        "_CASCADE_BLEND_SOFT",
-        "_CASCADE_BLEND_DITHER"
+        GlobalKeyword.Create("_CASCADE_BLEND_SOFT"),
+        GlobalKeyword.Create("_CASCADE_BLEND_DITHER")
     };
 
-    private static string[] shadowMaskKeywords =
+    private static GlobalKeyword[] shadowMaskKeywords =
     {
-        "_SHADOW_MASK_ALWAYS",
-        "_SHADOW_MASK_DISTANCE"
+        GlobalKeyword.Create("_SHADOW_MASK_ALWAYS"),
+        GlobalKeyword.Create("_SHADOW_MASK_DISTANCE")
     };
 
-    private static string[] otherFilerKeywords =
+    private static GlobalKeyword[] otherFilerKeywords =
     {
-        "_OTHER_PCF3",
-        "_OTHER_PCF5",
-        "_OTHER_PCF7"
+        GlobalKeyword.Create("_OTHER_PCF3"),
+        GlobalKeyword.Create("_OTHER_PCF5"),
+        GlobalKeyword.Create("_OTHER_PCF7")
     };
 
-    private static string[] pcssKeyWords = {"_PCSS_SOFT"};
+    //private static GlobalKeyword[] pcssKeyWords =
+    //{
+    //    GlobalKeyword.Create("_PCSS_SOFT")
+    //};
 
 
     private bool useShadowMask;
-
-    public void Setup(RenderGraphContext context, CullingResults cullingResults, ShadowSetting settings)
+    
+    /// <summary>
+    /// 获取Shadow TextureHandle
+    /// </summary>
+    public ShadowTextures GetRenderTextures(RenderGraph renderGraph, RenderGraphBuilder builder)
     {
-        buffer = context.cmd;
-        this.context = context.renderContext;
+        int atlasSize = (int)settings.directional.atlasSize;
+        var desc = new TextureDesc(atlasSize, atlasSize)
+        {
+            depthBufferBits = DepthBits.Depth32,
+            isShadowMap = true, //加了这个就不会有StencilBuffer
+            name = "Directional Shadow Atlas"
+        };
+        directionalShadowAtlas = ShadowedDirectionLightCount > 0
+            ? builder.WriteTexture(renderGraph.CreateTexture(desc))
+            : renderGraph.defaultResources.defaultShadowTexture;
+
+        atlasSize = (int)settings.other.atlasSize;
+        desc.width = desc.height = atlasSize;
+        desc.name = "Other Shadow Atlas";
+
+        otherShadowAtlas = ShadowedOtherLightCount > 0
+            ? builder.WriteTexture(renderGraph.CreateTexture(desc))
+            : renderGraph.defaultResources.defaultShadowTexture;
+
+        return new ShadowTextures(directionalShadowAtlas, otherShadowAtlas);
+    }
+
+    public void Setup(CullingResults cullingResults, ShadowSetting settings)
+    {
         this.cullingResults = cullingResults;
         this.settings = settings;
         ShadowedDirectionLightCount = 0;
         ShadowedOtherLightCount = 0;
         this.useShadowMask = false;
-        
-        //pcss软阴影设置
-        if (settings.UsePCSS)
-        {
-            buffer.EnableShaderKeyword(pcssKeyWords[0]);
-            buffer.SetGlobalFloat(pcssShadowLightWidthId, settings.PCSSLightWidth);
-            buffer.SetGlobalFloat("_PCSSBias", settings.Bias);
-        }
-        else
-        {
-            buffer.DisableShaderKeyword(pcssKeyWords[0]);
-        }
-
     }
 
     //记录当前平行光数量，其他灯光数量
@@ -221,28 +249,34 @@ public class Shadows
         buffer.Clear();
     }
 
-    public void Render()
+    public void Render(RenderGraphContext context)
     {
+        buffer = context.cmd;
+        this.context = context.renderContext;
         //--------------
         //Draw ShadowMap 三种灯光的ShadowMap
         if(ShadowedDirectionLightCount > 0)
         {
             RenderDirectionalShadows();
         }
-        else
-        {
-            //默认ShadowMap
-            buffer.GetTemporaryRT(dirShadowAtlasId, 1, 1, 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
-        }
+        //现在RenderGraph控制了，默认的情况不用
+        //else
+        //{
+        //    //默认ShadowMap
+        //    buffer.GetTemporaryRT(dirShadowAtlasId, 1, 1, 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
+        //}
 
         if (ShadowedOtherLightCount > 0)
         {
             RenderOtherShadows();
         }
-        else
-        {
-            buffer.SetGlobalTexture(otherShadowAtlasId, dirShadowAtlasId);
-        }
+        //else
+        //{
+        //    buffer.SetGlobalTexture(otherShadowAtlasId, dirShadowAtlasId);
+        //}
+        
+        buffer.SetGlobalTexture(dirShadowAtlasId, directionalShadowAtlas);
+        buffer.SetGlobalTexture(otherShadowAtlasId, otherShadowAtlas);
         
         //---------------
         
@@ -258,7 +292,6 @@ public class Shadows
         
         buffer.SetGlobalVector(shadowAtlasSizeId, atlasSizes);
         
-        //buffer.EndSample(bufferName);
         ExecuteBuffer();
     }
 
@@ -269,9 +302,11 @@ public class Shadows
         atlasSizes.x = atlasSize;
         atlasSizes.y = 1f / atlasSize;
         //请求RT
-        buffer.GetTemporaryRT(dirShadowAtlasId, atlasSize, atlasSize, 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
+        //buffer.GetTemporaryRT(dirShadowAtlasId, atlasSize, atlasSize, 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
+        
         //切换RenderTarget到ShadowMap
-        buffer.SetRenderTarget(dirShadowAtlasId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+        buffer.SetRenderTarget(directionalShadowAtlas, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+        
         //ClearBuffer先
         buffer.ClearRenderTarget(true, false, Color.clear);
         
@@ -361,9 +396,11 @@ public class Shadows
         atlasSizes.z = atlasSize;
         atlasSizes.w = 1f / atlasSize;
         //请求RT
-        buffer.GetTemporaryRT(otherShadowAtlasId, atlasSize, atlasSize, 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
+       // buffer.GetTemporaryRT(otherShadowAtlasId, atlasSize, atlasSize, 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
+       
         //切换RenderTarget到ShadowMap
-        buffer.SetRenderTarget(otherShadowAtlasId, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+        buffer.SetRenderTarget(otherShadowAtlas, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+        
         //ClearBuffer先
         buffer.ClearRenderTarget(true, false, Color.clear);
         
@@ -505,18 +542,18 @@ public class Shadows
   
     }
 
-    void SetKeywords(string[] keywords, int enableIndex)
+    void SetKeywords(GlobalKeyword[] keywords, int enableIndex)
     {
         for (int i = 0; i < keywords.Length; i++)
         {
             if (i == enableIndex)
             {
-                buffer.EnableShaderKeyword(keywords[i]);
+                buffer.SetKeyword(keywords[i], i == enableIndex);
             }
-            else
-            {
-                buffer.DisableShaderKeyword(keywords[i]);
-            }
+            //else
+            //{
+            //    buffer.SetKeyword(keywords[i]);
+            //}
         }
     }
 
@@ -594,12 +631,14 @@ public class Shadows
 
     public void CleanUp()
     {
+        //现在不会有默认RT了，不需要自己控制RealeaseRT
+        
         //因为有一张默认的RT
-        buffer.ReleaseTemporaryRT(dirShadowAtlasId);
-        if(ShadowedOtherLightCount > 0)
-        {
-            buffer.ReleaseTemporaryRT(otherShadowAtlasId);
-        }
-        ExecuteBuffer();
+        //buffer.ReleaseTemporaryRT(dirShadowAtlasId);
+        //if(ShadowedOtherLightCount > 0)
+        //{
+        //    buffer.ReleaseTemporaryRT(otherShadowAtlasId);
+        //}
+        //ExecuteBuffer();
     }
 }

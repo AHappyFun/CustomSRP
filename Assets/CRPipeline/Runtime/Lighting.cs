@@ -35,7 +35,9 @@ public class Lighting
     static Vector4[] otherLightSpotAngles = new Vector4[maxOtherLightCount];
     static Vector4[] otherLightShadowData = new Vector4[maxOtherLightCount];
 
-    static string lightsPerObjectKeyword = "_LIGHTS_PER_OBJECT";
+    static readonly GlobalKeyword lightsPerObjectKeyword = GlobalKeyword.Create("_LIGHTS_PER_OBJECT");
+    
+    static readonly GlobalKeyword shadowPCSSKeyword = GlobalKeyword.Create("_PCSS_SOFT");
     
     //const string bufferName = "Lighting";
     //CommandBuffer buffer = new CommandBuffer
@@ -47,32 +49,41 @@ public class Lighting
 
     Shadows shadows = new Shadows();
 
-    public void Setup(RenderGraphContext context, CullingResults cullingResults, ShadowSetting shadowSetting, bool useLightsPerobject, int renderingLayerMask)
+    private int dirLightCount;
+
+    private int otherLightCount;
+
+    private bool useLightsPerObject;
+
+    public void Setup(CullingResults cullingResults, ShadowSetting shadowSetting, bool useLightsPerobject, int renderingLayerMask)
     {
         this.cullingResults = cullingResults;
-        buffer = context.cmd;
-        //buffer.BeginSample(bufferName);
-        
-        shadows.Setup(context, cullingResults, shadowSetting);
+        this.useLightsPerObject = useLightsPerobject;
+        //Shadow设置
+        shadows.Setup(cullingResults, shadowSetting);
         //灯光数据
-        SetupLights(useLightsPerobject, renderingLayerMask);
-        //渲染ShadowMap
-        shadows.Render();
+        SetupLights(renderingLayerMask);
         
-        //buffer.EndSample(bufferName);
-
-        context.renderContext.ExecuteCommandBuffer(buffer);
-        buffer.Clear();
     }
 
-    void SetupLights(bool useLightsPerobject, int renderingLayerMasks)
+    public ShadowTextures GetShadowTextures(RenderGraph renderGraph, RenderGraphBuilder builder)
     {
-        NativeArray<int> indexMap = useLightsPerobject ? cullingResults.GetLightIndexMap(Allocator.Temp) : default;
+        return shadows.GetRenderTextures(renderGraph, builder);
+    }
+
+    /// <summary>
+    /// 统计灯光数量以及设置灯光数据Data
+    /// </summary>
+    void SetupLights(int renderingLayerMasks)
+    {
+        NativeArray<int> indexMap = useLightsPerObject ? cullingResults.GetLightIndexMap(Allocator.Temp) : default;
 
         //只设置可见光 剔除结果
         NativeArray<VisibleLight> visableLights = cullingResults.visibleLights;
 
-        int dirLightCount = 0, otherLightCount = 0;
+        dirLightCount = 0;
+        otherLightCount = 0;
+        
         int i;
         for (i = 0; i < visableLights.Length; i++)
         {
@@ -107,7 +118,7 @@ public class Lighting
                 }
             }
 
-            if (useLightsPerobject)
+            if (useLightsPerObject)
             {
                 indexMap[i] = newIndex;
             }
@@ -115,7 +126,7 @@ public class Lighting
         }
         
         //剔除不可见的光
-        if (useLightsPerobject)
+        if (useLightsPerObject)
         {
             for (; i < indexMap.Length; i++)
             {
@@ -123,12 +134,27 @@ public class Lighting
             }
             cullingResults.SetLightIndexMap(indexMap);
             indexMap.Dispose();
-            Shader.EnableKeyword(lightsPerObjectKeyword);
+        }
+        
+    }
+
+    public void Render(RenderGraphContext context)
+    {
+        CommandBuffer buffer = context.cmd;
+        
+        //pcss软阴影设置
+        if (shadows.settings.UsePCSS)
+        {
+            buffer.SetKeyword(shadowPCSSKeyword, true);
+            buffer.SetGlobalFloat(Shadows.pcssShadowLightWidthId, shadows.settings.PCSSLightWidth);
+            buffer.SetGlobalFloat("_PCSSBias", shadows.settings.Bias);
         }
         else
         {
-            Shader.DisableKeyword(lightsPerObjectKeyword);
+            buffer.SetKeyword(shadowPCSSKeyword, false);
         }
+        
+        buffer.SetKeyword(lightsPerObjectKeyword, useLightsPerObject);
         
         //dir light
         buffer.SetGlobalInt(dirLightCountID, dirLightCount);
@@ -150,6 +176,10 @@ public class Lighting
             buffer.SetGlobalVectorArray(otherLightShadowDataID, otherLightShadowData);
         }
         
+        //渲染ShadowMap
+        shadows.Render(context);
+        context.renderContext.ExecuteCommandBuffer(buffer);
+        buffer.Clear();
     }
 
     //传递Dir灯光数据到Shader里
