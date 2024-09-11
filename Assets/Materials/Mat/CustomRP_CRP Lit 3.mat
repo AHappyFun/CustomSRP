@@ -74,7 +74,7 @@ Material:
     - _Fresnel: 0.744
     - _IBL_ON: 0
     - _MaskMapToggle: 0
-    - _Metallic: 0
+    - _Metallic: 0.41
     - _NormalMapToggle: 0
     - _NormalScale: 1
     - _Occlusion: 0
@@ -85,7 +85,7 @@ Material:
     - _SrcBlend: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.6839622, g: 0.80650747, b: 1, a: 1}
-    - _Color: {r: 0.68396217, g: 0.80650747, b: 1, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

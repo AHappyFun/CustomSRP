@@ -26,7 +26,7 @@ public class GeometryPass
         context.cmd.Clear();
     }
 
-    public static void Record(RenderGraph renderGraph, Camera camera, CullingResults cullingResults, bool useLightsPerObject, int renderingLayerMask, bool opaque, in CameraRendererTextures camTextures, in ShadowTextures shadowTextures)
+    public static void Record(RenderGraph renderGraph, Camera camera, CullingResults cullingResults, bool useLightsPerObject, int renderingLayerMask, bool opaque, in CameraRendererTextures camTextures, in LightResources lightResources)
     {
         ProfilingSampler sampler = opaque ? samplerOpaque : samplerTransparent;
         
@@ -63,8 +63,15 @@ public class GeometryPass
             }
         }
 
-        builder.ReadTexture(shadowTextures.directionalAtlas);
-        builder.ReadTexture(shadowTextures.otherAtlas);
+        builder.ReadComputeBuffer(lightResources.dirLightDataBuffer);
+        builder.ReadComputeBuffer(lightResources.otherLightDataBuffer);
+        
+        builder.ReadTexture(lightResources.shadowResources.directionalAtlas);
+        builder.ReadTexture(lightResources.shadowResources.otherAtlas);
+        builder.ReadComputeBuffer(lightResources.shadowResources.directionalCascadeShadowBuffer);
+        builder.ReadComputeBuffer(lightResources.shadowResources.directionalShadowMatrixBuffer);
+        builder.ReadComputeBuffer(lightResources.shadowResources.otherShadowDataBuffer);
+
         
         builder.SetRenderFunc<GeometryPass>(static(pass, context) => pass.Render(context));
     }

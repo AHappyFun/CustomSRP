@@ -29,7 +29,7 @@ MonoBehaviour:
       subpixelBlending: 0.455
       quality: 2
   shadowSetting:
-    maxDistance: 80
+    maxDistance: 80.5
     distanceFade: 0.133
     UsePCSS: 1
     PCSSLightWidth: 4.3

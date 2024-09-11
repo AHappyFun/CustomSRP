@@ -13,8 +13,8 @@ using UnityEngine.Experimental.Rendering.RenderGraphModule;
 public partial class CustomRP: RenderPipeline
 {
 
-    private ScriptableCullingParameters cullingParameters;
-    private CullingResults cullResults;
+    //private ScriptableCullingParameters cullingParameters;
+    //private CullingResults cullResults;
 
     //bool useDynamicBatch, useGPUInstance, useLightsPerObject;
     bool useLightsPerObject;
@@ -31,7 +31,7 @@ public partial class CustomRP: RenderPipeline
     
     public CustomRP(CameraBufferSettings cameraBufferSettings, bool useSRPBatcher, bool useLightsPerObject, ShadowSetting shadowSetting, PostFXSettings postFXSettings, int colorLutResolution, Shader cameraRenderShader)
     {
-        cullResults = new CullingResults();
+        //cullResults = new CullingResults();
         
         //this.useDynamicBatch = useDynamicBatching;
         //this.useGPUInstance = useGPUInstancing;

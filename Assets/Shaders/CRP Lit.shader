@@ -87,8 +87,14 @@
 			#pragma multi_compile _ _PCSS_SOFT
 			#pragma multi_compile _ _IBL_GI
 
+			//debug renderdoc需要
+			#pragma enable_d3d11_debug_symbols
+			
 			//需要处理Loop GLES3.0 
-			#pragma target 3.5
+			//#pragma target 3.5
+
+			//需要支持StructedBuffer
+			#pragma target 4.5
 			#include "ShaderLibrary/LitPass.hlsl"
 
 			#pragma vertex litVert
