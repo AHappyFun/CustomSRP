@@ -289,6 +289,11 @@ public partial class Shadows
             RenderOtherShadows();
         }
         
+        //SetData
+        buffer.SetGlobalBuffer(dirShadowMatricesID, directionalShadowMatrixBuffer);
+        buffer.SetGlobalBuffer(directionalCascadeDataID, directionalCascadeShadowDataBuffer);
+        buffer.SetGlobalBuffer(otherShadowDataID, otherShadowDataBuffer);
+        
         buffer.SetGlobalTexture(dirShadowAtlasId, directionalShadowAtlas);
         buffer.SetGlobalTexture(otherShadowAtlasId, otherShadowAtlas);
         
@@ -339,13 +344,10 @@ public partial class Shadows
 
         //Dir shadowMatrix buffer
         buffer.SetBufferData(directionalShadowMatrixBuffer, dirShadowMatrices, 0, 0, maxShadowdDirectionalLightCount * settings.directional.cascadeCount);
-        buffer.SetGlobalBuffer(dirShadowMatricesID, directionalShadowMatrixBuffer);
 
         //Dir shadowData buffer
         buffer.SetBufferData(directionalCascadeShadowDataBuffer, directionalCascadeShadowData, 0, 0, maxShadowdDirectionalLightCount);
-        buffer.SetGlobalBuffer(directionalCascadeDataID, directionalCascadeShadowDataBuffer);
         
-
         SetKeywords(directionalFilterKeywords, (int)settings.directional.filter - 1);
         SetKeywords(cascadeBlendKeywords, (int)settings.directional.cascadeBlend - 1);
 
@@ -445,7 +447,7 @@ public partial class Shadows
         }
         
         buffer.SetBufferData(otherShadowDataBuffer, otherShadowData, 0, 0, ShadowedOtherLightCount);
-        buffer.SetGlobalBuffer(otherShadowDataID, otherShadowDataBuffer);
+
         
         SetKeywords(otherFilerKeywords, (int)settings.other.filter - 1);
         

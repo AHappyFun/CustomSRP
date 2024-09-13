@@ -10,51 +10,18 @@ using UnityEngine.Rendering;
 public partial class CustomRPAsset : RenderPipelineAsset
 {
     [SerializeField]
-    bool UseSRPBatcher = true, UseLightsPerObject = true;
-
-    [SerializeField]
-    private CameraBufferSettings cameraBufferSettings = new CameraBufferSettings
-    {
-        allowHDR = true,
-        renderScale = 1f,
-        fxaa = new CameraBufferSettings.FXAA
-        {
-            fixedThreshold = 0.0833f,
-            relativeThreshold = 0.166f,
-            subpixelBlending = 0.75f
-        }
-    };
-
-    [SerializeField]
-    ShadowSetting shadowSetting = default;
-
-    [SerializeField]
-    PostFXSettings postFXSettings = default;
+    private CustomRPSettings RPSettings;
     
-    public enum ColorLUTResolution
-    {
-        _16 = 16,
-        _32 = 32,
-        _64 = 64
-    }
-
-    [SerializeField]
-    ColorLUTResolution colorLutResolution = ColorLUTResolution._32;
-
-    [SerializeField]
-    private Shader cameraRenderShader;
-    
-    [Header("Deprecated Settings")]
-    [SerializeField, Tooltip("Dynamic batching is no longer used.")]
-    bool useDynamicBatching;
-
-    [SerializeField, Tooltip("GPU instancing is always enabled.")]
-    bool useGPUInstancing;
-    
-
     protected override RenderPipeline CreatePipeline()
     {
-        return new CustomRP(cameraBufferSettings, UseSRPBatcher, UseLightsPerObject, shadowSetting, postFXSettings, (int)colorLutResolution, cameraRenderShader);
+        if ((RPSettings == null || RPSettings.cameraRenderShader == null))
+        {
+            RPSettings = new CustomRPSettings()
+            {
+            };
+        }
+        
+        return new CustomRP(RPSettings);
     }
 
     
@@ -78,4 +45,44 @@ partial class CustomRPAsset
     public override string[] renderingLayerMaskNames => renderingLayerNames;
 
 #endif
+}
+
+[System.Serializable]
+public class CustomRPSettings
+{
+    [SerializeField]
+    public bool UseSRPBatcher = true, UseLightsPerObject = true;
+
+    [SerializeField]
+    public CameraBufferSettings cameraBufferSettings = new CameraBufferSettings
+    {
+        allowHDR = true,
+        renderScale = 1f,
+        fxaa = new CameraBufferSettings.FXAA
+        {
+            fixedThreshold = 0.0833f,
+            relativeThreshold = 0.166f,
+            subpixelBlending = 0.75f
+        }
+    };
+
+    [SerializeField]
+    public ShadowSetting shadowSetting = default;
+
+    [SerializeField]
+    public PostFXSettings postFXSettings = default;
+    
+    public enum ColorLUTResolution
+    {
+        _16 = 16,
+        _32 = 32,
+        _64 = 64
+    }
+
+    [SerializeField]
+    public ColorLUTResolution colorLutResolution = ColorLUTResolution._32;
+
+    [SerializeField]
+    public Shader cameraRenderShader;
+
 }

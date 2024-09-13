@@ -12,37 +12,23 @@ using UnityEngine.Experimental.Rendering.RenderGraphModule;
 //自定义管线类，继承RenderPipeline，主要实现Render方法
 public partial class CustomRP: RenderPipeline
 {
-
-    //private ScriptableCullingParameters cullingParameters;
-    //private CullingResults cullResults;
-
     //bool useDynamicBatch, useGPUInstance, useLightsPerObject;
-    bool useLightsPerObject;
-
-    CameraBufferSettings cameraBufferSettings;
-
-    ShadowSetting shadowSettings;
-
-    PostFXSettings postFXSettings;
+    //bool useLightsPerObject;
+    //CameraBufferSettings cameraBufferSettings;
+    //ShadowSetting shadowSettings;
+    //PostFXSettings postFXSettings;
+    //private int colorLUTResolution;
 
     CameraRenderer renderer;
-
-    private int colorLUTResolution;
     
-    public CustomRP(CameraBufferSettings cameraBufferSettings, bool useSRPBatcher, bool useLightsPerObject, ShadowSetting shadowSetting, PostFXSettings postFXSettings, int colorLutResolution, Shader cameraRenderShader)
+    private readonly CustomRPSettings RPSettings;
+    
+    public CustomRP(CustomRPSettings settings)
     {
-        //cullResults = new CullingResults();
-        
-        //this.useDynamicBatch = useDynamicBatching;
-        //this.useGPUInstance = useGPUInstancing;
-        this.shadowSettings = shadowSetting;
-        this.postFXSettings = postFXSettings;
-        this.useLightsPerObject = useLightsPerObject;
-        this.colorLUTResolution = colorLutResolution;
-        this.cameraBufferSettings = cameraBufferSettings;
-        GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
+        this.RPSettings = settings;
+        GraphicsSettings.useScriptableRenderPipelineBatching = settings.UseSRPBatcher;
         GraphicsSettings.lightsUseLinearIntensity = true; //灯光线性空间
-        renderer = new CameraRenderer(cameraRenderShader);
+        renderer = new CameraRenderer(settings.cameraRenderShader);
 
         InitializeForEditor();
     }
@@ -61,7 +47,7 @@ public partial class CustomRP: RenderPipeline
     {
         foreach (var cam in cameras)
         {
-            renderer.Render(renderGraph, context, cam, cameraBufferSettings, useLightsPerObject, shadowSettings, this.postFXSettings, colorLUTResolution);       
+            renderer.Render(renderGraph, context, cam, RPSettings);       
         }
         renderGraph.EndFrame();
     }

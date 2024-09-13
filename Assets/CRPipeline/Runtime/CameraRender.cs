@@ -42,10 +42,15 @@ public class CameraRenderer
         CoreUtils.Destroy(material);
     }
 
-    public void Render(RenderGraph renderGraph, ScriptableRenderContext ctx, Camera cam, CameraBufferSettings cameraBufferSettings, bool useLightsPerObject ,ShadowSetting shadowSetting, PostFXSettings postFXSettings, int colorLUTResolution)
+    public void Render(RenderGraph renderGraph, ScriptableRenderContext ctx, Camera cam, CustomRPSettings customRPSettings)
     {
         context = ctx;
         camera = cam;
+
+        CameraBufferSettings cameraBufferSettings = customRPSettings.cameraBufferSettings;
+        PostFXSettings postFXSettings = customRPSettings.postFXSettings;
+        ShadowSetting shadowSetting = customRPSettings.shadowSetting;
+        bool useLightsPerObject = customRPSettings.UseLightsPerObject;
         
         var crpCamera = camera.GetComponent<CustomRenderPipelineCamera>();
         CameraSettings cameraSettings = crpCamera ? crpCamera.Settings : defaultCameraSettings;
@@ -160,7 +165,7 @@ public class CameraRenderer
                 postFXStack.Camera = camera;
                 postFXStack.FinalBlendMode = cameraSettings.finalBlendMode;
                 postFXStack.Settings = postFXSettings;
-                PostFXPass.Record(renderGraph, postFXStack, colorLUTResolution, cameraSettings.keepAlpha, camTextures);
+                PostFXPass.Record(renderGraph, postFXStack, (int)customRPSettings.colorLutResolution, cameraSettings.keepAlpha, camTextures);
             }
             else if (useIntermediateBuffer)
             {
