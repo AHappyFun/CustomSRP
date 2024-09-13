@@ -28,7 +28,7 @@ public partial class CustomRP: RenderPipeline
         this.RPSettings = settings;
         GraphicsSettings.useScriptableRenderPipelineBatching = settings.UseSRPBatcher;
         GraphicsSettings.lightsUseLinearIntensity = true; //灯光线性空间
-        renderer = new CameraRenderer(settings.cameraRenderShader);
+        renderer = new CameraRenderer(settings.cameraRenderShader, settings.cameraForwardPlusDebuggerShader);
 
         InitializeForEditor();
     }

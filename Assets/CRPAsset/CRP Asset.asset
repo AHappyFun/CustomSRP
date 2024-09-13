@@ -51,3 +51,5 @@ MonoBehaviour:
     colorLutResolution: 64
     cameraRenderShader: {fileID: 4800000, guid: 8a29b903ee724b649ccb2cd4366f2d6a,
       type: 3}
+    cameraForwardPlusDebuggerShader: {fileID: 4800000, guid: 279d694fecaa47d28d16c46567518707,
+      type: 3}

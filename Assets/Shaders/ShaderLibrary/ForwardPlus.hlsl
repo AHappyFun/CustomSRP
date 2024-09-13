@@ -44,6 +44,22 @@ struct ForwardPlusTile
     {
         return _ForwardPlusTiles[lightIndexInTile];
     }
+
+    bool IsMinEdgePixel(float2 screenUV)
+    {
+        float2 startUV = coordinates / _ForwardPlusSettings.xy;
+        return any(screenUV - startUV < _CameraBufferSize.xy);
+    }
+
+    int GetMaxLightsPerTile()
+    {
+        return GetTileDataSize() - 1;
+    }
+
+    int2 GetScreenSize()
+    {
+        return int2(round(_CameraBufferSize.zw / _ForwardPlusSettings.xy));
+    }
 };
 
 //通过屏幕空间UV获取Tile结构

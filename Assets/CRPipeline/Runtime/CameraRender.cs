@@ -32,14 +32,16 @@ public class CameraRenderer
 
     public const float renderScaleMin = 0.1f, renderScaleMax = 2f;
 
-    public CameraRenderer(Shader shader)
+    public CameraRenderer(Shader shader, Shader cameraDebuggerShader)
     {
         material = CoreUtils.CreateEngineMaterial(shader);
+        CameraDebugger.Init(cameraDebuggerShader);
     }
 
     public void Dispose()
     {
         CoreUtils.Destroy(material);
+        CameraDebugger.CleanUp();
     }
 
     public void Render(RenderGraph renderGraph, ScriptableRenderContext ctx, Camera cam, CustomRPSettings customRPSettings)
@@ -171,6 +173,9 @@ public class CameraRenderer
             {
                 FinalPass.Record(renderGraph, copier, camTextures);
             }
+            
+            //画自定义Debug
+            DebugPass.Record(renderGraph, customRPSettings, camera, lightResources);
             
             //画Gizmos
             GizmosPass.Record(renderGraph, useIntermediateBuffer, copier, camTextures);

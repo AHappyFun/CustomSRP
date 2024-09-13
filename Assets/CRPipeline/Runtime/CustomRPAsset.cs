@@ -85,4 +85,7 @@ public class CustomRPSettings
     [SerializeField]
     public Shader cameraRenderShader;
 
+    [SerializeField]
+    public Shader cameraForwardPlusDebuggerShader;
+
 }
