@@ -110,7 +110,7 @@ half4 litFrag(Varyings input) :SV_TARGET
 
 	  GI gi = GetGI(GI_FRAGMENT_DATA(input), surf, brdf);
 	
-	  float3 color = GetLighting(surf, brdf, gi);
+	  float3 color = GetLighting(cfg.fragment, surf, brdf, gi);
 
 	  color += GetEmission(cfg);
 

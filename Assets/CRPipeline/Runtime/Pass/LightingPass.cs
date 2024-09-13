@@ -1,6 +1,8 @@
 ﻿
 using System.Runtime.InteropServices;
 using Unity.Collections;
+using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
@@ -9,12 +11,15 @@ public readonly ref struct LightResources
 {
     public readonly ComputeBufferHandle dirLightDataBuffer;
     public readonly ComputeBufferHandle otherLightDataBuffer;
+    public readonly ComputeBufferHandle tileBuffer;
+    
     public readonly ShadowResources shadowResources;
 
-    public LightResources(ComputeBufferHandle otherLightDataBuffer, ComputeBufferHandle dirLightDataBuffer, ShadowResources shadowResources)
+    public LightResources(ComputeBufferHandle otherLightDataBuffer, ComputeBufferHandle dirLightDataBuffer, ComputeBufferHandle tileBuffer, ShadowResources shadowResources)
     {
         this.dirLightDataBuffer = dirLightDataBuffer;
         this.otherLightDataBuffer = otherLightDataBuffer;
+        this.tileBuffer = tileBuffer;
         this.shadowResources = shadowResources;
     }
 
@@ -26,8 +31,13 @@ public partial class LightingPass
     
     void Render(RenderGraphContext context) => RenderLighting(context);
 
-    public static LightResources Record(RenderGraph renderGraph, CullingResults cullingResults,
-        ShadowSetting shadowSetting, bool useLightsPerObject, int renderingLayerMask)
+    public static LightResources Record(
+        RenderGraph renderGraph, 
+        CullingResults cullingResults,
+        Vector2Int attachmentSize,
+        ShadowSetting shadowSetting, 
+        bool useLightsPerObject, 
+        int renderingLayerMask)
     {
         using RenderGraphBuilder builder = renderGraph.AddRenderPass(sampler.name, out LightingPass pass, sampler);
         
@@ -45,7 +55,18 @@ public partial class LightingPass
             stride = OtherLightData.stride
         }));
 
-        pass.Setup(cullingResults, shadowSetting, useLightsPerObject, renderingLayerMask);
+        pass.Setup(cullingResults, attachmentSize, shadowSetting, useLightsPerObject, renderingLayerMask);
+        
+        //Setup需要计算Tile数量，然后这里申请TileBuffer
+        if (!useLightsPerObject)
+        {
+            pass.tileBuffer = builder.WriteComputeBuffer(renderGraph.CreateComputeBuffer(new ComputeBufferDesc
+            {
+                name = "Forward+ Tiles",
+                count = pass.AllTileCount * tileDataSize,
+                stride = 4
+            }));
+        }
         
         builder.SetRenderFunc<LightingPass>(static(pass, context) => pass.Render(context));
         
@@ -54,6 +75,7 @@ public partial class LightingPass
         return new LightResources(
             pass.otherLightDataBuffer, 
             pass.dirLightDataBuffer,
+            pass.tileBuffer,
             pass.GetShadowResources(renderGraph, builder)
        );
     }
@@ -154,24 +176,72 @@ partial class LightingPass
         
         //渲染ShadowMap
         shadows.Render(context);
+        
+        //forward+ tile的处理
+        if (useLightsPerObject)
+        {
+            context.renderContext.ExecuteCommandBuffer(buffer);
+            buffer.Clear();
+            return;
+        }
+        
+        forwardPlusJobHandle.Complete();
+        buffer.SetBufferData(tileBuffer, tileData, 0, 0, tileData.Length);
+        buffer.SetGlobalBuffer(forwardPlusTilesID, tileBuffer);
+        buffer.SetGlobalVector(forwardPlusSettingsID, 
+            new Vector4(
+                screenUVToTileCoordinates.x, 
+                screenUVToTileCoordinates.y, 
+                tileCount.x.ReinterpretAsFloat(), 
+                tileDataSize.ReinterpretAsFloat())
+        );
+        
         context.renderContext.ExecuteCommandBuffer(buffer);
         buffer.Clear();
+
+        //释放NativeArray
+        lightBounds.Dispose();
+        tileData.Dispose();
+
     }
     
     
     //----------------------------------------//
     
     const int maxDirLightCount = 4;
-    const int maxOtherLightCount = 64;
+    const int maxOtherLightCount = 128;
+
+    //Tile里最多灯光数量
+    private const int maxLightsPerTile = 31;
+    //每个Tile数据量
+    private const int tileDataSize = maxLightsPerTile + 1;
+    //每个Tile的像素格大小 8x8
+    private const int tileScreenPixelSize = 64;
+
+    private Vector2 screenUVToTileCoordinates;
+
+    //长宽的Tile数量
+    private Vector2Int tileCount;
+
+    //全部的Tile数量
+    private int AllTileCount => tileCount.x * tileCount.y;
+
+    //灯光Bounds
+    private NativeArray<float4> lightBounds;
+    private NativeArray<int> tileData;
+    private JobHandle forwardPlusJobHandle;
     
     private ComputeBufferHandle otherLightDataBuffer;
     private ComputeBufferHandle dirLightDataBuffer;
+    private ComputeBufferHandle tileBuffer;
     
-    static int dirLightCountID = Shader.PropertyToID("_DirectionLightCount"); //Buildin也为最多4个
+    static int dirLightCountID = Shader.PropertyToID("_DirectionLightCount");
     static int dirLightDataID = Shader.PropertyToID("_DirectionLightData");
 
     static int otherLightCountID = Shader.PropertyToID("_OtherLightCount");
-    static int otherLightDataID = Shader.PropertyToID("_OtherLightData"); //buffer组合下面的几个
+    static int otherLightDataID = Shader.PropertyToID("_OtherLightData");
+    static int forwardPlusTilesID = Shader.PropertyToID("_ForwardPlusTiles");
+    static int forwardPlusSettingsID = Shader.PropertyToID("_ForwardPlusSettings");
 
     //使用SturctedBuffer代替
     private static readonly DirectionalLightData[] directionalLightData= new DirectionalLightData[maxDirLightCount];
@@ -188,12 +258,28 @@ partial class LightingPass
     private int otherLightCount;
     private bool useLightsPerObject;
 
-    public void Setup(CullingResults cullingResults, ShadowSetting shadowSetting, bool useLightsPerobject, int renderingLayerMask)
+    public void Setup(
+        CullingResults cullingResults,
+        Vector2Int attachmentSize,
+        ShadowSetting shadowSetting, 
+        bool useLightsPerobject, 
+        int renderingLayerMask)
     {
         this.cullingResults = cullingResults;
         this.useLightsPerObject = useLightsPerobject;
         //Shadow设置
         shadows.Setup(cullingResults, shadowSetting);
+
+        if (!useLightsPerobject)
+        {
+            lightBounds = new NativeArray<float4>(maxOtherLightCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            //计算Tile数量，使用ScreenSize划分
+            screenUVToTileCoordinates.x = attachmentSize.x / (float)tileScreenPixelSize;
+            screenUVToTileCoordinates.y = attachmentSize.y / (float)tileScreenPixelSize;
+            tileCount.x = Mathf.CeilToInt(screenUVToTileCoordinates.x);
+            tileCount.y = Mathf.CeilToInt(screenUVToTileCoordinates.y);
+        }
+        
         //灯光数据
         SetupLights(renderingLayerMask);
         
@@ -237,6 +323,7 @@ partial class LightingPass
                         if (otherLightCount < maxOtherLightCount)
                         {
                             newIndex = otherLightCount;
+                            SetForwardPlus(newIndex, ref visableLight);
                             otherLightData[otherLightCount++] = OtherLightData.CreatePointLight(ref visableLight, l, shadows.ReserveOtherShadows(visableLight.light, i));
                         }
                         break;
@@ -244,6 +331,7 @@ partial class LightingPass
                         if (otherLightCount < maxOtherLightCount)
                         {
                             newIndex = otherLightCount;
+                            SetForwardPlus(newIndex, ref visableLight);
                             otherLightData[otherLightCount++] = OtherLightData.CreateSpotLight(ref visableLight, l, shadows.ReserveOtherShadows(visableLight.light, i));
                         }
                         break;
@@ -267,7 +355,34 @@ partial class LightingPass
             cullingResults.SetLightIndexMap(indexMap);
             indexMap.Dispose();
         }
+        //forward+
+        else
+        {
+            tileData = new NativeArray<int>(AllTileCount * tileDataSize, Allocator.TempJob);
+            forwardPlusJobHandle = new ForwardPlusTilesJob
+            {
+                lightBounds = lightBounds,
+                tileData = tileData,
+                otherLightCount = otherLightCount,
+                tileScreenUVSize = new float2(1f / screenUVToTileCoordinates.x, 1f / screenUVToTileCoordinates.y),
+                maxLightsPerTile = maxLightsPerTile,
+                tilesPerRow = tileCount.x,
+                tileDataSize = tileDataSize
+            }.ScheduleParallel(AllTileCount, tileCount.x, default);
+        }
         
+    }
+
+    /// <summary>
+    /// 设置Forward+ LightBounds
+    /// </summary>
+    void SetForwardPlus(int lightIndex, ref VisibleLight visibleLight)
+    {
+        if (!useLightsPerObject)
+        {
+            Rect rect = visibleLight.screenRect;
+            lightBounds[lightIndex] = new float4(rect.xMin, rect.yMin, rect.xMax, rect.yMax);
+        }
     }
         
     public void CleanUp()

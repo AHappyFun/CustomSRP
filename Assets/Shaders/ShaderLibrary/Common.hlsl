@@ -22,6 +22,7 @@ float OrthographicDepthBufferToLinear(float rawDepth)
 }
 
 #include "Fragment.hlsl"
+#include "ForwardPlus.hlsl"
 
 
 float Square(float v) {

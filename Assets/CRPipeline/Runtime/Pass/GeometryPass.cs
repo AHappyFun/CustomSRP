@@ -66,6 +66,12 @@ public class GeometryPass
         builder.ReadComputeBuffer(lightResources.dirLightDataBuffer);
         builder.ReadComputeBuffer(lightResources.otherLightDataBuffer);
         
+        //读取TileBuffer，做tile光照
+        if (lightResources.tileBuffer.IsValid())
+        {
+            builder.ReadComputeBuffer(lightResources.tileBuffer);
+        }
+        
         builder.ReadTexture(lightResources.shadowResources.directionalAtlas);
         builder.ReadTexture(lightResources.shadowResources.otherAtlas);
         builder.ReadComputeBuffer(lightResources.shadowResources.directionalCascadeShadowBuffer);

@@ -425,7 +425,7 @@ public partial class Shadows
         
         buffer.SetGlobalFloat(shadowPancakingId, 0f);
 
-       // buffer.BeginSample("OtherLightShadows");
+        buffer.BeginSample("OtherLightShadows");
         ExecuteBuffer();
         
         //ShadowMap划分Tile 4x4
@@ -451,7 +451,7 @@ public partial class Shadows
         
         SetKeywords(otherFilerKeywords, (int)settings.other.filter - 1);
         
-        //buffer.EndSample("OtherLightShadows");
+        buffer.EndSample("OtherLightShadows");
         ExecuteBuffer();
     }
 

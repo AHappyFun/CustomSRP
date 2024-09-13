@@ -128,7 +128,7 @@ public class CameraRenderer
         };
         
         //是否使用中间Buffer，就是是否拷贝深度和Color在中间用
-        bool useIntermediateBuffer = useScaledRendering || useColorTexture || useDepthTexture || enablePostFX;
+        bool useIntermediateBuffer = useScaledRendering || useColorTexture || useDepthTexture || enablePostFX || !useLightsPerObject;
         
         //改用RenderGraph
         using (renderGraph.RecordAndExecute(renderGraphParameters))
@@ -136,7 +136,7 @@ public class CameraRenderer
             using var _ = new RenderGraphProfilingScope(renderGraph, cameraSampler);
             
             //设置灯光数据、绘制ShadowMap
-            LightResources lightResources = LightingPass.Record(renderGraph, cullingResults, shadowSetting, useLightsPerObject, cameraSettings.maskLights ? cameraSettings.renderingLayerMask : -1);
+            LightResources lightResources = LightingPass.Record(renderGraph, cullingResults, bufferSize, shadowSetting, useLightsPerObject, cameraSettings.maskLights ? cameraSettings.renderingLayerMask : -1);
             
             //摄像机渲染物体相关设置
             CameraRendererTextures camTextures = SetupPass.Record(renderGraph,useIntermediateBuffer, useColorTexture, useDepthTexture, useHDR, bufferSize, camera);
