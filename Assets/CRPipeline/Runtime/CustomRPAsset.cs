@@ -50,9 +50,16 @@ partial class CustomRPAsset
 [System.Serializable]
 public class CustomRPSettings
 {
+    [SerializeField] 
+    public bool UseSRPBatcher = true;
+    
     [SerializeField]
-    public bool UseSRPBatcher = true, UseLightsPerObject = true;
+    [Tooltip("Deprecated")]
+    public bool UseLightsPerObject = true;
 
+    [SerializeField]
+    public ForwardPlusSettings ForwardPlusTileSetting;
+    
     [SerializeField]
     public CameraBufferSettings cameraBufferSettings = new CameraBufferSettings
     {

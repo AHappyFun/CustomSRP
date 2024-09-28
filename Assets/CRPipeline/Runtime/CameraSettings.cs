@@ -102,3 +102,26 @@ public struct CameraBufferSettings
 
     public FXAA fxaa;
 }
+
+[Serializable]
+public struct ForwardPlusSettings
+{
+    /// <summary>
+    /// 每个Tile的像素，需要合理配置。Tile小了格子多，占buffer。tile大了，优化效率不足。
+    /// </summary>
+    public enum TileSize
+    {
+        Default,
+        _16 = 16,
+        _32 = 32,
+        _64 = 64,
+        _128 = 128,
+        _256 = 256
+    }
+
+    [Tooltip("Max lights per tile")]
+    public int maxLightsPerTile;
+
+    [Tooltip("Tile size in pixels")]
+    public TileSize tileSize;
+}

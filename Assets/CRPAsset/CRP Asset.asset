@@ -15,6 +15,9 @@ MonoBehaviour:
   RPSettings:
     UseSRPBatcher: 0
     UseLightsPerObject: 0
+    ForwardPlusTileSetting:
+      maxLightsPerTile: 10
+      tileSize: 128
     cameraBufferSettings:
       allowHDR: 1
       copyColor: 1

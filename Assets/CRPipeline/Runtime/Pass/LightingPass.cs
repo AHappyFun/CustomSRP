@@ -35,6 +35,7 @@ public partial class LightingPass
         RenderGraph renderGraph, 
         CullingResults cullingResults,
         Vector2Int attachmentSize,
+        ForwardPlusSettings forwardPlusSettings,
         ShadowSetting shadowSetting, 
         bool useLightsPerObject, 
         int renderingLayerMask)
@@ -55,7 +56,7 @@ public partial class LightingPass
             stride = OtherLightData.stride
         }));
 
-        pass.Setup(cullingResults, attachmentSize, shadowSetting, useLightsPerObject, renderingLayerMask);
+        pass.Setup(cullingResults, attachmentSize, forwardPlusSettings, shadowSetting, useLightsPerObject, renderingLayerMask);
         
         //Setup需要计算Tile数量，然后这里申请TileBuffer
         if (!useLightsPerObject)
@@ -63,7 +64,7 @@ public partial class LightingPass
             pass.tileBuffer = builder.WriteComputeBuffer(renderGraph.CreateComputeBuffer(new ComputeBufferDesc
             {
                 name = "Forward+ Tiles",
-                count = pass.AllTileCount * tileDataSize,
+                count = pass.AllTileCount * pass.maxTileDataSize,
                 stride = 4
             }));
         }
@@ -211,12 +212,15 @@ partial class LightingPass
     const int maxDirLightCount = 4;
     const int maxOtherLightCount = 128;
 
+    //都转换为配置了ForwardTileSettings
     //Tile里最多灯光数量
-    private const int maxLightsPerTile = 31;
+    private int maxLightsPerTile;
     //每个Tile数据量
-    private const int tileDataSize = maxLightsPerTile + 1;
-    //每个Tile的像素格大小 8x8
-    private const int tileScreenPixelSize = 64;
+    private int tileDataSize;
+    //最大Tile数据量
+    private int maxTileDataSize;
+    //格子的像素长宽
+    //private const int tileScreenPixelSize = 64;
 
     private Vector2 screenUVToTileCoordinates;
 
@@ -261,6 +265,7 @@ partial class LightingPass
     public void Setup(
         CullingResults cullingResults,
         Vector2Int attachmentSize,
+        ForwardPlusSettings forwardPlusSettings,
         ShadowSetting shadowSetting, 
         bool useLightsPerobject, 
         int renderingLayerMask)
@@ -272,10 +277,15 @@ partial class LightingPass
 
         if (!useLightsPerobject)
         {
+            maxLightsPerTile = forwardPlusSettings.maxLightsPerTile <= 0 ? 31 : forwardPlusSettings.maxLightsPerTile;
+            tileDataSize = maxLightsPerTile + 1;
+            maxTileDataSize = maxLightsPerTile + 1;
+            
             lightBounds = new NativeArray<float4>(maxOtherLightCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            float tileScreenPixelSize = forwardPlusSettings.tileSize <= 0 ? 64f : (float)forwardPlusSettings.tileSize;
             //计算Tile数量，使用ScreenSize划分
-            screenUVToTileCoordinates.x = attachmentSize.x / (float)tileScreenPixelSize;
-            screenUVToTileCoordinates.y = attachmentSize.y / (float)tileScreenPixelSize;
+            screenUVToTileCoordinates.x = attachmentSize.x / tileScreenPixelSize;
+            screenUVToTileCoordinates.y = attachmentSize.y / tileScreenPixelSize;
             tileCount.x = Mathf.CeilToInt(screenUVToTileCoordinates.x);
             tileCount.y = Mathf.CeilToInt(screenUVToTileCoordinates.y);
         }
@@ -298,6 +308,9 @@ partial class LightingPass
 
         //只设置可见光 剔除结果
         NativeArray<VisibleLight> visableLights = cullingResults.visibleLights;
+
+        int requiredMaxLightsPerTile = Mathf.Min(maxLightsPerTile, visableLights.Length);
+        tileDataSize = requiredMaxLightsPerTile + 1;
 
         dirLightCount = 0;
         otherLightCount = 0;
@@ -365,7 +378,7 @@ partial class LightingPass
                 tileData = tileData,
                 otherLightCount = otherLightCount,
                 tileScreenUVSize = new float2(1f / screenUVToTileCoordinates.x, 1f / screenUVToTileCoordinates.y),
-                maxLightsPerTile = maxLightsPerTile,
+                maxLightsPerTile = requiredMaxLightsPerTile,
                 tilesPerRow = tileCount.x,
                 tileDataSize = tileDataSize
             }.ScheduleParallel(AllTileCount, tileCount.x, default);

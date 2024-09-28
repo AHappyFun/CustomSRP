@@ -51,6 +51,7 @@ public class CameraRenderer
 
         CameraBufferSettings cameraBufferSettings = customRPSettings.cameraBufferSettings;
         PostFXSettings postFXSettings = customRPSettings.postFXSettings;
+        ForwardPlusSettings forwardPlusSettings = customRPSettings.ForwardPlusTileSetting;
         ShadowSetting shadowSetting = customRPSettings.shadowSetting;
         bool useLightsPerObject = customRPSettings.UseLightsPerObject;
         
@@ -138,7 +139,7 @@ public class CameraRenderer
             using var _ = new RenderGraphProfilingScope(renderGraph, cameraSampler);
             
             //设置灯光数据、绘制ShadowMap
-            LightResources lightResources = LightingPass.Record(renderGraph, cullingResults, bufferSize, shadowSetting, useLightsPerObject, cameraSettings.maskLights ? cameraSettings.renderingLayerMask : -1);
+            LightResources lightResources = LightingPass.Record(renderGraph, cullingResults, bufferSize, forwardPlusSettings, shadowSetting, useLightsPerObject, cameraSettings.maskLights ? cameraSettings.renderingLayerMask : -1);
             
             //摄像机渲染物体相关设置
             CameraRendererTextures camTextures = SetupPass.Record(renderGraph,useIntermediateBuffer, useColorTexture, useDepthTexture, useHDR, bufferSize, camera);
