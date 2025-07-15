@@ -1,6 +1,18 @@
 # CustomSRP
  Learn UnitySRP 
 
+ 分支：Unity2022.3.25 SRP14.0.11
+
+分支新加入：
+
+1.RenderGraph管理Pass
+
+2.Forward+ Tile
+
+3.RenderDebugger
+
+
+原本：
 项目用于学习Unity SRP的渲染。
 
 1.前向渲染管线的搭建
@@ -14,17 +26,3 @@
 5.PCSS软阴影加进去
 
 6.PBR的间接光加入IBL方式的GI
-
-
-
-
-
-![Image text](https://github.com/AHappyFun/CustomSRP/blob/master/readme/r1.png)
-
-![Image text](https://github.com/AHappyFun/CustomSRP/blob/master/readme/dirlight.jpg)
-
-![Image text](https://github.com/AHappyFun/CustomSRP/blob/master/readme/pcss.jpg)
-
-![Image text](https://github.com/AHappyFun/CustomSRP/blob/master/readme/multicam.jpg)
-
-![Image text](https://github.com/AHappyFun/CustomSRP/blob/master/readme/ibl.jpg)
