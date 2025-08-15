@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CRP Asset
   m_EditorClassIdentifier: 
   RPSettings:
-    UseSRPBatcher: 1
+    UseSRPBatcher: 0
     UseLightsPerObject: 0
     ForwardPlusTileSetting:
       maxLightsPerTile: 10

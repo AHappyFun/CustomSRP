@@ -11,18 +11,24 @@ public class CustomShaderGUI : ShaderGUI
     Object[] materials;
     MaterialProperty[] properties;
 
+    private bool showPreset = true;
+    private bool showProp= true;
+    private bool showEmissionGI= true;
+
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
     {
         EditorGUI.BeginChangeCheck();
         
-        base.OnGUI(materialEditor, properties);
         editor = materialEditor;
         materials = materialEditor.targets;
         this.properties = properties;
 
-        BakeEmission();
-        
         PresetGUI();
+
+        base.OnGUI(materialEditor, properties);
+
+        BakeEmission();
+
 
         if (EditorGUI.EndChangeCheck())
         {
@@ -151,7 +157,6 @@ public class CustomShaderGUI : ShaderGUI
 
     #region GUI
 
-    bool showPreset;
     void PresetGUI()
     {
         EditorGUILayout.Space();

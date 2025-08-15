@@ -1,12 +1,12 @@
 #ifndef CUSTOM_LIT_INPUT_INCLUDED
 #define CUSTOM_LIT_INPUT_INCLUDED
 
-TEXTURE2D(_BaseTexture);   //ÎÆÀíºÍ²ÉÑùÆ÷²»¿ÉÒÔÊµÀı
+TEXTURE2D(_BaseTexture);   //çº¹ç†å’Œé‡‡æ ·å™¨ä¸å¯ä»¥å®ä¾‹
 TEXTURE2D(_MaskTexture);   //MODS
-TEXTURE2D(_NormalMap);     //·¨ÏßÌùÍ¼
+TEXTURE2D(_NormalMap);     //æ³•çº¿è´´å›¾
 
 TEXTURE2D(_EmissionTex);
-SAMPLER(sampler_BaseTexture); //Ò»¸ö²ÉÑùÆ÷¿ÉÒÔ¸ø¶à¸öÎÆÀí
+SAMPLER(sampler_BaseTexture); //ä¸€ä¸ªé‡‡æ ·å™¨å¯ä»¥ç»™å¤šä¸ªçº¹ç†
 
 TEXTURE2D(_DetailTexture);
 TEXTURE2D(_DetailNormalMap);
@@ -20,6 +20,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _DetailTexture_ST)
     UNITY_DEFINE_INSTANCED_PROP(float, _AlphaCutoff)
     UNITY_DEFINE_INSTANCED_PROP(float, _ZWrite)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Transparent)
     UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
     UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
     UNITY_DEFINE_INSTANCED_PROP(float, _Occlusion)
@@ -74,7 +75,7 @@ float4 GetBase(InputConfig cfg)
         float detail = GetDetail(cfg).r * INPUT_PROP(_DetailAlbedo);
         float detailMask = GetMask(cfg).b;
 
-        //½üËÆGamma¿Õ¼ä£¬ÏßĞÔ¿Õ¼äÖ±½ÓËã»áºÜÁÁ
+        //è¿‘ä¼¼Gammaç©ºé—´ï¼Œçº¿æ€§ç©ºé—´ç›´æ¥ç®—ä¼šå¾ˆäº®
         baseTex.rgb = lerp(sqrt(baseTex.rgb), detail < 0.0 ? 0.0 : 1.0, abs(detail) * detailMask);
         baseTex.rgb *= baseTex.rgb;
     }
@@ -149,7 +150,7 @@ float3 GetNormalTangentSpace(InputConfig cfg)
 
 float GetFinalAlpha(float alpha)
 {
-    return INPUT_PROP(_ZWrite) ? 1.0 : alpha;
+    return INPUT_PROP(_Transparent) ? alpha : 1.0f;
 }
 
 

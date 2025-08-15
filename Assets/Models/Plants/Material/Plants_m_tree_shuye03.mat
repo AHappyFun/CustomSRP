@@ -2,20 +2,27 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!21 &2100000
 Material:
-  serializedVersion: 6
+  serializedVersion: 8
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Plants_m_tree_shuye03
   m_Shader: {fileID: 4800000, guid: bf3f65dd57dd8994cbba1a6c42853500, type: 3}
-  m_ShaderKeywords: _CLIPPING _RECEIVE_SHADOWS _SHADOWS_CLIP _SHADOWS_ON
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _CLIPPING
+  - _RECEIVE_SHADOWS
+  - _SHADOWS_CLIP
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: 2450
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -52,6 +59,14 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _IBLCubeMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _IBLSpecularLUT:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -99,6 +114,7 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    m_Ints: []
     m_Floats:
     - _AlphaClip: 0
     - _AlphaCutoff: 0.896
@@ -113,21 +129,30 @@ Material:
     - _Cutoff: 0.5
     - _DetailAlbedo: 1
     - _DetailAlbedoMapScale: 1
+    - _DetailLable: 0
     - _DetailNormalMapScale: 1
     - _DetailNormalScale: 1
     - _DetailSmothness: 1
     - _DetailToggle: 0
     - _DstBlend: 0
     - _Emission: 0.16
+    - _EmissionLable: 0
     - _EnvironmentReflections: 1
     - _Fresnel: 1
+    - _GILable: 0
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _Hue: 1
+    - _IBL_ON: 0
+    - _MainTexLable: 0
     - _Main_tex_stranth: 0
+    - _MaskLable: 0
     - _MaskMapToggle: 0
+    - _MaterialSettingLable: 0
     - _Metallic: 0
+    - _Mode: 1
+    - _NormalMapLable: 0
     - _NormalMapToggle: 0
     - _NormalScale: 1
     - _Occlusion: 1
@@ -138,6 +163,7 @@ Material:
     - _QueueOffset: 0
     - _Range: 1
     - _ReceiveShadows: 1
+    - _RenderSettingLable: 0
     - _Shadows: 1
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
@@ -146,6 +172,7 @@ Material:
     - _Surface: 0
     - _Top_range: 0.197
     - _Top_range_move: 0.7
+    - _Transparent: 0
     - _Wind_size_XZ: 1
     - _Wind_size_Y: 1
     - _Wind_speed: 0.2
@@ -161,6 +188,7 @@ Material:
     - _Color_top: {r: 0.12213881, g: 0.33245158, b: 0.07227186, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
+  m_BuildTextureStacks: []
 --- !u!114 &4900691488380287751
 MonoBehaviour:
   m_ObjectHideFlags: 11

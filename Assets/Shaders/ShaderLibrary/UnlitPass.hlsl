@@ -52,7 +52,7 @@ half4 unlitFrag(Varyings input) :SV_TARGET
 {
 	 UNITY_SETUP_INSTANCE_ID(input);
 
-	 InputConfig cfg = GetInputConfig(input.positionCS_SS, 0.0);
+	 InputConfig cfg = GetInputConfig(input.positionCS_SS, input.uv0, 0.0);
 
 	//return float4(cfg.fragment.bufferDepth.xxx / 20.0, 1.0);
 	//return GetBufferColor(cfg.fragment, 0.05f);
@@ -77,6 +77,7 @@ half4 unlitFrag(Varyings input) :SV_TARGET
 #endif
 	
 	 half4 finalColor = GetBase(cfg);
+
 #if defined(_CLIPPING)
 	 clip(finalColor.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _AlphaCutoff));
 #endif

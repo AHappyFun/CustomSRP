@@ -1,7 +1,7 @@
 #ifndef CUSTOM_UNLIT_INPUT_INCLUDED
 #define CUSTOM_UNLIT_INPUT_INCLUDED
 
-TEXTURE2D(_BaseTexture);   //Œ∆¿Ì∫Õ≤…—˘∆˜≤ªø…“‘ µ¿˝
+TEXTURE2D(_BaseTexture);   //Á∫πÁêÜÂíåÈááÊ†∑Âô®‰∏çÂèØ‰ª•ÂÆû‰æã
 TEXTURE2D(_DistortionTexture);
 SAMPLER(sampler_BaseTexture);
 
@@ -9,7 +9,8 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseTexture_ST)
     UNITY_DEFINE_INSTANCED_PROP(float, _AlphaCutoff)
-    UNITY_DEFINE_INSTANCED_PROP(float, _ZWrite)  
+    UNITY_DEFINE_INSTANCED_PROP(float, _ZWrite)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Transparent)
     UNITY_DEFINE_INSTANCED_PROP(float, _NearFadeDistance)
     UNITY_DEFINE_INSTANCED_PROP(float, _NearFadeRange)
     UNITY_DEFINE_INSTANCED_PROP(float, _SoftParticlesDistance)
@@ -77,7 +78,7 @@ float GetFresnel(InputConfig cfg)
 
 float GetFinalAlpha(float alpha)
 {
-    return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _ZWrite) ? 1.0 : alpha;
+    return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Transparent) ? alpha : 1.0;
 }
 
 float GetDistortionBlend(InputConfig cfg)

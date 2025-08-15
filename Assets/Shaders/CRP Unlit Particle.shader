@@ -2,12 +2,29 @@
 {
     Properties
     {
+        _RenderSettingLable("RenderSettings", int) = 0
+		[Enum(Off, 0, On, 1)] _ZWrite ("ZWrite", float) = 1
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull Mode", Float) = 2
+    	[Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows("Receive Shadows", float) = 1
+		[Enum(UnityEngine.Rendering.BlendMode)]_SrcBlend("Src Blend", float) = 1
+		[Enum(UnityEngine.Rendering.BlendMode)]_DstBlend("Dst Blend", float) = 0
+
+     	[HideInInspector] _Shadows("Shadows", float) = 0
+        [HideInInspector]_Mode ("__mode", Float) = 0.0
+        [HideInInspector]_Transparent("__transparent", Float) = 0.0
+
+        _MaterialSettingLable("MaterialSettings", int) = 0
+        _AlphaCutoff("Alpha CutOff", Range(0,1)) = 0
+        [Toggle(_CLIPPING)] _Clipping("AlphaTest", float) = 0
+		[Toggle(_PREMULTIPY_ALPHA)] _PremulAlpha("Pre Mul Alpha", float) = 0
+
+        _MainTexLable("主贴图", int) = 0
 		[HDR]_BaseColor("BaseColor", color) = (1,1,1,1)
     	[Toggle(_VERTEX_COLORS)] _VertexColors("Vertex Colors Enable", float) = 0
     	[Toggle(_FLIPBOOK_BLENDING)] _FlipbookBlending("Flipbook Blending", float) = 0
 		_BaseTexture("Base Texture", 2D) = "white"{}
-		_AlphaCutoff("Alpha CutOff", Range(0,1)) = 0
-    	
+
+        _OtherLable("Other Setting", int) = 0
     	[Toggle(_NEAR_FADE)] _NearFade("Near Fade", float) = 0
     	_NearFadeDistance("Near Fade Distance", Range(0.0, 10.0)) = 1
     	_NearFadeRange("Near Fade Range", Range(0.01, 10.0)) = 1
@@ -20,13 +37,6 @@
     	[NoScaleOffset] _DistortionTexture("Distortion Vector", 2D) = "bump" {}
     	_DistortionStrength("Distortion Strength", Range(0.0, 0.2)) = 0.1
     	_DistortionBlend("Distortion Blend", Range(0.0, 1.0)) = 1
-
-		[Toggle(_CLIPPING)] _Clipping("AlphaTest", float) = 0
-    	[KeywordEnum(On, Clip, Dither, Off)] _Shadows("Shadows", float) = 0
-
-		[Enum(UnityEngine.Rendering.BlendMode)]_SrcBlend("Src Blend", float) = 1
-		[Enum(UnityEngine.Rendering.BlendMode)]_DstBlend("Dst Blend", float) = 0
-		[Enum(Off, 0, On, 1)] _ZWrite ("ZWrite", float) = 1
     }
     SubShader
     {

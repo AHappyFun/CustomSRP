@@ -65,23 +65,34 @@ Material:
     m_Floats:
     - _AlphaCutoff: 0
     - _Clipping: 0
+    - _Cull: 2
     - _DetailAlbedo: 1
+    - _DetailLable: 0
     - _DetailNormalScale: 1
     - _DetailSmothness: 1
     - _DetailToggle: 0
     - _DstBlend: 0
+    - _EmissionLable: 0
     - _Fresnel: 1
+    - _GILable: 0
     - _IBL_ON: 0
+    - _MainTexLable: 0
+    - _MaskLable: 0
     - _MaskMapToggle: 0
+    - _MaterialSettingLable: 0
     - _Metallic: 0
+    - _Mode: 0
+    - _NormalMapLable: 0
     - _NormalMapToggle: 0
     - _NormalScale: 1
     - _Occlusion: 1
     - _PremulAlpha: 0
     - _ReceiveShadows: 1
+    - _RenderSettingLable: 0
     - _Shadows: 0
     - _Smoothness: 0
     - _SrcBlend: 1
+    - _Transparent: 0
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 0.8301887, g: 0.8301887, b: 0.8301887, a: 1}

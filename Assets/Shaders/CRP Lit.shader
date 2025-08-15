@@ -2,24 +2,46 @@
 {
     Properties
     {
+
+        _RenderSettingLable("RenderSettings", int) = 0
+		[Enum(Off, 0, On, 1)] _ZWrite ("ZWrite", float) = 1
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull Mode", Float) = 2
+    	[Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows("Receive Shadows", float) = 1
+		[Enum(UnityEngine.Rendering.BlendMode)]_SrcBlend("Src Blend", float) = 1
+		[Enum(UnityEngine.Rendering.BlendMode)]_DstBlend("Dst Blend", float) = 0
+
+    	[HideInInspector] _Shadows("Shadows", float) = 0
+        [HideInInspector]_Mode ("__mode", Float) = 0.0
+        [HideInInspector]_Transparent("__transparent", Float) = 0.0
+
+        _MaterialSettingLable("MaterialSettings", int) = 0
+		_AlphaCutoff("Alpha CutOff", Range(0,1)) = 0
+        [Toggle(_CLIPPING)] _Clipping("AlphaTest", float) = 0
+		[Toggle(_PREMULTIPY_ALPHA)] _PremulAlpha("Pre Mul Alpha", float) = 0
+
     	//for lightmap
     	[HideInInspector] _MainTex("Texture for Lightmap", 2D) = "white" {}
 		[HideInInspector] _Color("Color for Lightmap", Color) = (0.5, 0.5, 0.5, 1.0)
-    	
+
+        _MainTexLable("主贴图", int) = 0
 		_BaseColor("BaseColor", color) = (0.5,0.5,0.5,1)
 		_BaseTexture("Base Texture", 2D) = "white"{}
-    	
+
+        _MaskLable("PBR Mask", int) = 0
     	[Toggle(_MASK_MAP)]_MaskMapToggle("Use Mask", float) = 0
     	[NoScaleOffset]_MaskTexture("Mask (MettialiicR OcclusionG DetailB SmoothnessA)", 2D) = "white" {}
 		_Metallic("Metallic", range(0,1)) = 0
 		_Smoothness("Smoothness",Range(0,1)) = 0.5
     	_Occlusion("Occlusion", Range(0,1)) = 1
     	_Fresnel("Fresnel", Range(0,1)) = 1
-    	 
+
+        _NormalMapLable("NormalMap", int) = 0
     	//base Normal
     	[Toggle(_NORMAL_MAP)]_NormalMapToggle("NormalMap Open", float) = 0
     	[NoScaleOffset]_NormalMap("NormalMap", 2D) = "bump" {}
     	_NormalScale("Normal Strength", Range(0,1)) = 1
+
+        _DetailLable("Detail", int) = 0
         //Detail albedo and normal
     	[Toggle(_DETAIL_MAP)]_DetailToggle("Detail Open", float) = 0
     	_DetailTexture("Details(R:DetailAlbedo B:DetailSmoothness)", 2D) = "linearGrey" {}
@@ -27,25 +49,17 @@
     	_DetailAlbedo("Detail Albedo", Range(0,1)) = 1
     	_DetailSmothness("Detail Smoothness", Range(0,1)) = 1
     	_DetailNormalScale("DetailNormal Strength", Range(0,1)) = 1
-    	
+
+        _EmissionLable("自发光", int) = 0
     	//emission
     	[NoScaleOffset]_EmissionTex("EmissionTex", 2D) = "white" {}
     	[HDR]_EmissionColor("EmissionColor", color) = (0,0,0,0)
-    	
+
+        _GILable("GI", int) = 0
     	[Toggle(_IBL_GI)]_IBL_ON("IBL ON", float) = 0
     	_IBLCubeMap("IBL", cube) = "white"{}
     	_IBLSpecularLUT("SpecularLUT", 2D) = "white"{}
-    	
-		_AlphaCutoff("Alpha CutOff", Range(0,1)) = 0
 
-        [Toggle(_CLIPPING)] _Clipping("AlphaTest", float) = 0
-    	[KeywordEnum(On, Clip, Dither, Off)] _Shadows("Shadows", float) = 0
-    	[Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows("Receive Shadows", float) = 1
-		[Toggle(_PREMULTIPY_ALPHA)] _PremulAlpha("Pre Mul Alpha", float) = 0
-
-		[Enum(UnityEngine.Rendering.BlendMode)]_SrcBlend("Src Blend", float) = 1
-		[Enum(UnityEngine.Rendering.BlendMode)]_DstBlend("Dst Blend", float) = 0
-		[Enum(Off, 0, On, 1)] _ZWrite ("ZWrite", float) = 1
     }
     SubShader
     {
@@ -65,6 +79,7 @@
 			}
 			Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
 			ZWrite [_ZWrite]
+            Cull[_Cull]
 
 			HLSLPROGRAM
 
@@ -140,5 +155,5 @@
     	}
     }
 
-	CustomEditor "CustomShaderGUI"
+	CustomEditor "LoyShaderGUI"
 }
