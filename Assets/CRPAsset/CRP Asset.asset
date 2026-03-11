@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CRP Asset
   m_EditorClassIdentifier: 
   RPSettings:
-    UseSRPBatcher: 0
+    UseSRPBatcher: 1
     UseLightsPerObject: 0
     ForwardPlusTileSetting:
       maxLightsPerTile: 10
@@ -36,7 +36,7 @@ MonoBehaviour:
       maxDistance: 80.5
       distanceFade: 0.133
       UsePCSS: 1
-      PCSSLightWidth: 4.3
+      PCSSLightWidth: 5
       Bias: 0.01
       directional:
         atlasSize: 4096
