@@ -46,14 +46,51 @@ public class BVHBuilder : MonoBehaviour
     [Range(0,100)]
     public int ShowDepth = 0;
 
+    private List<Triangle> triangles = new List<Triangle>();
+
+    private int triangleTests = 0;
+
     private void Start()
     {
         if(mesh == null)
             return;
 
-        List<Triangle> triangles = BuildTriangles(mesh).ToList();
+        triangles = BuildTriangles(mesh).ToList();
         root = Build(triangles, 0, triangles.Count);
 
+    }
+
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+
+
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            ray.direction = ray.direction.normalized;
+
+            //BVH相交测试
+            triangleTests = 0;
+            float t = float.MaxValue;
+            bool isHit = Traverse(root, ray, ref t);
+
+            Debug.Log("三角形测试数量：" + triangleTests);
+            Debug.Log("t = " + t);
+            Debug.Log("是否击中 " + isHit);
+
+            //暴力三角形测试
+            //bool hit = false;
+            //foreach(var tri in triangles)
+            //{
+            //    if(RayTriangle(ray, tri, out float t))
+            //    {
+            //        hit = true;
+            //        break;
+            //    }
+            //}
+            //Debug.Log("是否击中 " + hit);
+
+        }
     }
 
     void OnDrawGizmos()
@@ -70,6 +107,10 @@ public class BVHBuilder : MonoBehaviour
 
         if(node.IsLeaf())
             Gizmos.color = Color.green;
+        else
+        {
+            Gizmos.color = Color.gray;
+        }
 
         if (depth == ShowDepth)
         {
@@ -100,9 +141,9 @@ public class BVHBuilder : MonoBehaviour
         {
             tris[i] = new Triangle
             {
-                v0 = vertices[indices[i * 3 + 0]],
-                v1 = vertices[indices[i * 3 + 1]],
-                v2 = vertices[indices[i * 3 + 2]],
+                v0 = transform.TransformPoint(vertices[indices[i * 3 + 0]]) ,
+                v1 = transform.TransformPoint(vertices[indices[i * 3 + 1]]) ,
+                v2 = transform.TransformPoint(vertices[indices[i * 3 + 2]]) ,
             };
         }
 
@@ -171,5 +212,98 @@ public class BVHBuilder : MonoBehaviour
             return a.Center()[axis].CompareTo(b.Center()[axis]);
         }
     }
+
+    //光线相交
+    //与AABB
+    bool RayAABB(Ray ray, Bounds box)
+    {
+        float tmin = (box.min.x - ray.origin.x) / ray.direction.x;
+        float tmax = (box.max.x - ray.origin.x) / ray.direction.x;
+
+        if (tmin > tmax)
+            (tmin, tmax) = (tmax, tmin);
+
+        float tymin = (box.min.y - ray.origin.y) / ray.direction.y;
+        float tymax = (box.max.y - ray.origin.y) / ray.direction.y;
+
+        if (tymin > tymax)
+            (tymin, tymax) = (tymax, tymin);
+
+        if ((tmin > tymax) || (tymin > tmax))
+            return false;
+
+        return true;
+    }
+
+    //与三角形
+    bool RayTriangle(Ray ray, Triangle tri, out float t)
+    {
+        t = 0;
+
+        Vector3 edge1 = tri.v1 - tri.v0;
+        Vector3 edge2 = tri.v2 - tri.v0;
+
+        Vector3 pvec = Vector3.Cross(ray.direction, edge2);
+
+        float det = Vector3.Dot(edge1, pvec);
+
+        if (Mathf.Abs(det) < 1e-6f)
+            return false;
+
+        float invDet = 1f / det;
+
+        Vector3 tvec = ray.origin - tri.v0;
+
+        float u = Vector3.Dot(tvec, pvec) * invDet;
+
+        if (u < 0 || u > 1)
+            return false;
+
+        Vector3 qvec = Vector3.Cross(tvec, edge1);
+
+        float v = Vector3.Dot(ray.direction, qvec) * invDet;
+
+        if (v < 0 || u + v > 1)
+            return false;
+
+        t = Vector3.Dot(edge2, qvec) * invDet;
+
+        return t > 0;
+    }
+
+
+    //遍历BVH
+    bool Traverse(BVHNode node, Ray ray, ref float closestT)
+    {
+        if (!RayAABB(ray, node.bounds))
+            return false;
+
+        bool hit = false;
+
+        if (node.IsLeaf())
+        {
+            for (int i = node.start; i < node.start + node.count; i++)
+            {
+                triangleTests++;
+
+                if (RayTriangle(ray, triangles[i], out float t))
+                {
+                    if (t < closestT)
+                    {
+                        closestT = t;
+                        hit = true;
+                    }
+                }
+            }
+        }
+        else
+        {
+            hit |= Traverse(node.leftNode, ray, ref closestT);
+            hit |= Traverse(node.rightNode, ray, ref closestT);
+        }
+
+        return hit;
+    }
+
 
 }
